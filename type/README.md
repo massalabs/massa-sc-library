@@ -23,4 +23,8 @@ function transfer(to: string, a: number): result<boolean, string> {
 }
 ```
 
+<<<<<<< HEAD
 More code samples in [Doc tests](address/address.test.ts#L4).
+=======
+More code samples in [Doc tests](address/address.test.ts).
+>>>>>>> b0bc1fa (Adding README file)

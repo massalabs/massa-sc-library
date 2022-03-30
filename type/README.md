@@ -23,4 +23,4 @@ function transfer(to: string, a: number): result<boolean, string> {
 }
 ```
 
-More code samples in [Doc tests](address/address.test.ts).
+More code samples in [Doc tests](address/address.test.ts#L4).

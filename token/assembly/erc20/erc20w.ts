@@ -7,11 +7,11 @@ export class TokenWrapper {
     this.origine = o;
   }
 
-  Name():string {
-    return call(this.origine, 'Name', '', 0);
+  name():string {
+    return call(this.origine, 'name', 'i', 0);
   }
 
-  BalanceOf(a: string):u32 {
-    return u32(parseInt(call(this.origine, 'BalanceOf', a, 0), 10));
+  balanceOf(a: string):u32 {
+    return u32(parseInt(call(this.origine, 'balanceOf', a, 0), 10));
   }
 }

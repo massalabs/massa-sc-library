@@ -4,30 +4,28 @@
   "description": "",
   "ascMain": "assembly/index.ts",
   "scripts": {
-    "test": "node tests",
-    "asbuild:debug": "asc assembly/index.ts --target debug",
-    "asbuild:release": "asc assembly/index.ts --target release",
-    "asbuild": "npm run asbuild:debug && npm run asbuild:release",
+    "test": "asp",
     "fmt": "prettier --write '{*,**/*}.{js,ts,jsx,tsx,json}'",
     "lint:fix": "eslint --fix --ext .ts . && yarn fmt",
-    "lint": "eslint --ext .ts . && prettier --check '{*,**/*}.{js,ts,jsx,tsx,json}'",
-    "start": "npx serve ."
+    "lint": "eslint --ext .ts . && prettier --check '{*,**/*}.{js,ts,jsx,tsx,json}'"
   },
   "keywords": [],
-  "author": "",
+  "author": "Grégory Libert greg_libert@yahoo.fr",
   "license": "ISC",
   "devDependencies": {
+    "@as-pect/cli": "^6.2.4",
     "@typescript-eslint/eslint-plugin": "^5.17.0",
     "@typescript-eslint/parser": "^5.17.0",
-    "assemblyscript": "^0.20.3",
+    "assemblyscript": "0.19.23",
     "eslint": "^8.12.0",
     "eslint-config-google": "^0.14.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
+    "mscl-vm-mock": "link:../tool/vm-mock",
     "prettier": "^2.6.1",
-    "typescript": "^4.6.3"
+    "typescript": "^4.6.3",
+    "vm-mock": "link:/home/gregory/tmp/massa-sc-library/tool/vm-mock"
   },
-  "type": "module",
   "exports": {
     ".": {
       "import": "./build/release.js",
@@ -35,7 +33,8 @@
     }
   },
   "dependencies": {
-    "helper": "link:../helper",
-    "massa-sc-std": "^2.0.0"
+    "massa-sc-std": "^2.0.0",
+    "mscl-helper": "link:../helper",
+    "mscl-type": "link:../type"
   }
 }

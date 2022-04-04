@@ -21,10 +21,9 @@
     "eslint-config-google": "^0.14.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "mscl-vm-mock": "link:../tool/vm-mock",
+    "mscl-vm-mock": "https://gitpkg.now.sh/massalabs/massa-sc-library/tool/vm-mock?main",
     "prettier": "^2.6.1",
-    "typescript": "^4.6.3",
-    "vm-mock": "link:/home/gregory/tmp/massa-sc-library/tool/vm-mock"
+    "typescript": "^4.6.3"
   },
   "exports": {
     ".": {
@@ -33,8 +32,6 @@
     }
   },
   "dependencies": {
-    "massa-sc-std": "^2.0.0",
-    "mscl-helper": "link:../helper",
-    "mscl-type": "link:../type"
+    "massa-sc-std": "^2.0.0"
   }
 }

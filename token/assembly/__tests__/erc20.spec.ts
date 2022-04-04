@@ -8,14 +8,17 @@ describe('Black box tests', () => {
   });
 
   it('should return 0 for initialized balance', () => {
-    expect<string>(token.balanceOf('XXXaddress-1XXX'))
-        .toBe('0', 'default balance not working');
+    expect<string>(token.balanceOf('XXXaddress-1XXX')).toBe(
+      '0',
+      'default balance not working'
+    );
   });
 
   it('should return initialized balance', () => {
     setData('balXXXaddress-1XXX', '1000');
-    expect<string>(token.balanceOf('XXXaddress-1XXX'))
-        .toBe('1000', 'initialized balance not working');
+    expect<string>(token.balanceOf('XXXaddress-1XXX')).toBe(
+      '1000',
+      'initialized balance not working'
+    );
   });
 });
-

@@ -1,5 +1,5 @@
 import {Currency} from './currency';
-import {isValider} from './valider';
+import {Valider} from './valider';
 
 
 /**
@@ -11,7 +11,7 @@ import {isValider} from './valider';
  * To easier type checking, and because Result or Optional type are
  * not yet implemented, this type extends the isNoter interface
  */
-export class Amount implements isValider {
+export class Amount implements Valider {
   _value: u64;
   _currency: Currency;
   _isValid: bool;

@@ -4,6 +4,6 @@
  * an interface is added to let the type user know when the
  * type is no longer meaningful.
  */
-export interface isValider {
+export interface Valider {
     isValid(): bool
 }

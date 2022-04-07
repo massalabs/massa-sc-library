@@ -25,4 +25,10 @@ describe('Blackbox tests', () => {
         expect<bool>(a.isValid()).toBeTruthy("isValid method");
         expect<bool>(a.currency().sameAs(new Currency())).toBeTruthy("currency method");
     });
+    test('under/overflow', () => {
+        const a = new Amount(u64.MAX_VALUE);
+        expect<bool>(a.add(new Amount(1)).isValid()).toBeFalsy("overflow");
+        expect<bool>(a.add(new Amount(0)).isValid()).toBeTruthy("MAX_VALUE + 0");
+        expect<bool>((new Amount()).substract(a).isValid()).toBeFalsy("underflow");
+    })
 });

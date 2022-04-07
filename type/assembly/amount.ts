@@ -89,7 +89,9 @@ export class Amount implements Valider {
       return notAnAmount;
     }
 
-    return new Amount(this._value + a.value(), this._currency);
+    const r = new Amount(this._value + a.value(), this._currency);
+
+    return r.lessThan(a) ? notAnAmount : r;
   }
 
   /**
@@ -100,7 +102,7 @@ export class Amount implements Valider {
      * @return {Amount}
      */
   substract(a: Amount):Amount {
-    if (this.lessThan(a)) {
+    if (!this.matchAndAmounts(a) || this.lessThan(a)) {
       return notAnAmount;
     }
 
@@ -115,10 +117,6 @@ export class Amount implements Valider {
      * @return {bool}
      */
   lessThan(a: Amount):bool {
-    if (!this.matchAndAmounts(a)) {
-      return false;
-    }
-
     return this._value < a.value();
   }
 }

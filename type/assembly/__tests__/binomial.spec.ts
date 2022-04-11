@@ -1,4 +1,5 @@
 import {Binomial} from '../probability/binomial';
+import {drawHistogram} from './helper';
 
 describe('Doc test', () => {
   it('should be simple to use', () => {
@@ -14,7 +15,7 @@ describe('Doc test', () => {
 
 describe('Blackbox test', () => {
   // slow
-  xtest('binomial distribution', () => {
+  test('binomial distribution', () => {
     const a = new Uint32Array(20);
     const g = new Binomial(20, 0.5);
 
@@ -22,13 +23,11 @@ describe('Blackbox test', () => {
       a[i] = 0;
     }
 
-    for (let i=0; i<10000000; i++) {
+    for (let i=0; i<1000000; i++) {
       const s = g.draw();
       a[u32(s)] +=1;
     }
 
-    for (let i=0; i<a.length; i++) {
-      log<u32>(a[i]);
-    }
+    drawHistogram(a, 160);
   });
 });

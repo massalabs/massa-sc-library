@@ -1,4 +1,5 @@
 import {Sampler} from '../probability/sampler';
+import {drawHistogram} from './helper';
 
 const prob = new Map<u64, f64>();
 prob.set(0, 0.05);
@@ -70,19 +71,6 @@ describe('Blackbox test', () => {
       a[u32(s)] +=1;
     }
 
-    let max:u32 = 0;
-    for (let i=0; i<a.length; i++) {
-      if (a[i] > max) {
-        max = a[i];
-      }
-    }
-
-    for (let i=0; i<a.length; i++) {
-      let bin = i.toString() + ': ';
-      for (let j=0; j < Math.round(a[i]/max*160); j++) {
-        bin += '*';
-      }
-      log<string>(bin);
-    }
+    drawHistogram(a, 160);
   });
 });

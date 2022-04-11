@@ -7,7 +7,7 @@ import {randomInt} from './random';
  * This class shall be extended with your own probability.
  */
 export class Sampler {
-  _repartition: Float64Array;
+  _bounderies: Float64Array;
 
   /**
      * Instanciates a sampler.
@@ -18,7 +18,7 @@ export class Sampler {
      */
   constructor(s:u64=0) {
     Math.seedRandom(s);
-    this._repartition = new Float64Array(0);
+    this._bounderies = new Float64Array(0);
   }
 
   /**
@@ -37,7 +37,7 @@ export class Sampler {
   /**
      * Generates an observation using the rejection sampling method.
      *
-     * This method uses a unform random function to generate:
+     * This method uses a uniform random function to generate:
      *  - the number k, the potential observation
      *  - the number x, an alea
      *
@@ -104,36 +104,78 @@ export class Sampler {
   }
 
   /**
-   * Populate repartition
+   * Populate observation zone bounderies.
    *
-   * @param {u64} n - Smpling upper limit
+   * @param {u64} n - Sampling upper limit
    */
-  private populateRepartition(n: u64):void {
-    this._repartition = new Float64Array(i32(n));
+  private populateBounderies(n: u64):void {
+    this._bounderies = new Float64Array(i32(n));
 
-    this._repartition[0]; this.probability(0);
+    this._bounderies[0]; this.probability(0);
 
     for (let i=1; i<i32(n); i++) {
-      this._repartition[i] = this._repartition[i-1] + this.probability(i);
+      this._bounderies[i] = this._bounderies[i-1] + this.probability(i);
     }
   }
 
   /**
    * Generates an observation using the inverse cumulative distribution method.
    *
+   * This method uses:
+   * - the cumulative distribution function to breakdown its from/input set
+   *   into observations zone
+   * - a uniform random function to generate a number x, that will be used
+   *   to identify which observation zone is choosen.
+   *
+   * The process is the following:
+   *
+   * 1- The cumulative distribution function is used to define bounderies
+   *    of observation zone.
+   * 2- An number x is drawn using a uniform distribution function
+   * 3- The zone in which the number x falls is the observation
+   *
+   *  This process can be describe using the following schema with:
+   *   - observations in ordinate (from 0 to 4)
+   *   - probability for each observation in abscissa
+   *
+   *  0 ─
+   *  1 ──
+   *  2 ────
+   *  3 ─
+   *  4 ───
+   *
+   * Probabilities are cumulated:
+   *
+   *  0 ─
+   *  1  ──
+   *  2    ────
+   *  3        ─
+   *  4         ───
+   *
+   * Cumulated probabilities are projected on the same dimension:
+   *
+   *    ├┼─┼───┼┼──┤
+   *    0 1  2 3 4
+   *
+   * x is drawn and the corresponding observation zone is identified
+   * using bounderies:
+   *
+   *    ├┼x┼───┼┼──┤
+   *    0 1  2 3 4
+   *
    * @param{u64} n - Sampling upper limit.
    * @return {u64} Observation
    */
   inverseCumulativeDistribution(n: u64):u64 {
-    if (this._repartition.length == 0) {
-      this.populateRepartition(n);
+    if (this._bounderies.length == 0) {
+      this.populateBounderies(n);
     }
 
-    const x = Math.random()*this._repartition[i32(n-1)];
+    const x = Math.random()*this._bounderies[i32(n-1)];
 
 
     for (let i=0; i < i32(n); i++) {
-      if (x <= this._repartition[i]) {
+      if (x <= this._bounderies[i]) {
         return u64(i);
       }
     }

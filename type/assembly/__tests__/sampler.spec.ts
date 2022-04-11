@@ -13,17 +13,17 @@ prob.set(4, 0.07);
  */
 class WeightedProbability extends Sampler {
   probability(o: u64): f64 {
-      return prob[o];
+    return prob[o];
   }
 
   // In a real life example you should use only one sampling method.
   drawR(): u64 {
-      return this.rejectionSampling(4, 0.9);
+    return this.rejectionSampling(4, 0.9);
   }
 
   // In a real life example you should use only one sampling method.
   drawI(): u64 {
-      return this.inverseCumulativeDistribution(4);
+    return this.inverseCumulativeDistribution(4);
   }
 }
 
@@ -46,13 +46,13 @@ describe('Doc test', () => {
   });
 
   it('should be simple to extend inverseCumulativeDistribution', () => {
-      const d = new WeightedProbability();
+    const d = new WeightedProbability();
 
-      expect<u64>(d.drawI()).toBe(3);
-      expect<u64>(d.drawI()).toBe(1);
-      expect<u64>(d.drawI()).toBe(3);
-      expect<u64>(d.drawI()).toBe(3);
-  })
+    expect<u64>(d.drawI()).toBe(3);
+    expect<u64>(d.drawI()).toBe(1);
+    expect<u64>(d.drawI()).toBe(3);
+    expect<u64>(d.drawI()).toBe(3);
+  });
 });
 
 describe('Blackbox test', () => {
@@ -72,17 +72,17 @@ describe('Blackbox test', () => {
 
     let max:u32 = 0;
     for (let i=0; i<a.length; i++) {
-        if (a[i] > max){
-            max = a[i];
-        }
+      if (a[i] > max) {
+        max = a[i];
+      }
     }
 
     for (let i=0; i<a.length; i++) {
-        let bin = i.toString() + ': ';
-        for (let j=0; j < Math.round(a[i]/max*160); j++) {
-            bin += '*';
-        }
-        log<string>(bin);
+      let bin = i.toString() + ': ';
+      for (let j=0; j < Math.round(a[i]/max*160); j++) {
+        bin += '*';
+      }
+      log<string>(bin);
     }
   });
 });

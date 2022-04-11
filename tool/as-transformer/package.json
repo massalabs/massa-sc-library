@@ -8,6 +8,7 @@
   },
   "author": "Grégory Libert <greg_libert@yahoo.fr>",
   "license": "ISC",
-  "devDependencies": {
+  "dependencies": {
+    "visitor-as": "^0.8.0"
   }
 }

@@ -59,6 +59,6 @@ export class Binomial extends Sampler implements Drawer {
       }
     }
 
-    return this.rejection_sampling(this._n, this._m);
+    return this.rejectionSampling(this._n, this._m);
   }
 }

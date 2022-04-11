@@ -7,6 +7,8 @@ import {randomInt} from './random';
  * This class shall be extended with your own probability.
  */
 export class Sampler {
+  _repartition: Float64Array;
+
   /**
      * Instanciates a sampler.
      *
@@ -16,6 +18,7 @@ export class Sampler {
      */
   constructor(s:u64=0) {
     Math.seedRandom(s);
+    this._repartition = new Float64Array(0);
   }
 
   /**
@@ -32,13 +35,65 @@ export class Sampler {
   }
 
   /**
-     * Generates an observation from given distribution.
+     * Generates an observation using the rejection sampling method.
+     *
+     * This method uses a unform random function to generate:
+     *  - the number k, the potential observation
+     *  - the number x, an alea
+     *
+     *  If the number x is lower or equal to the probability of event k,
+     *  then it's an observation.
+     *
+     *  Otherwise, the process is restarted (k and x are generated).
+     *
+     *  This process can be describe using the following schema with:
+     *   - observations in abscissa (from 0 to 4)
+     *   - probability for each observation in ordinate (observation 2 having
+     *   the greatest probability p_max)
+     *
+     *  p_max ────┬─┬────
+     *            │ │ ┌─┐
+     *          ┌─┤ │ │ │
+     *        ┌─┤ │ ├─┤ │
+     *        └─┴─┴─┴─┴─┘
+     *         0 1 2 3 4
+     *
+     *  Rejection sampling method for this example do the following:
+     *
+     *  1- randomly find the potential observation k by using an uniform random
+     *     function with lower limit 0 and upper limit 4.
+     *     Lets say k = 0.
+     *  2- draw a number x, from an unifrom random function with lower limit 0
+     *     and upper limit p_max.
+     *     Lets say x > p_0. In that case we restart the process from
+     *     the begining.
+     *  3- randomly find k.
+     *     Lets say k = 2.
+     *  4- randmly find x.
+     *     Lets say x < p_2. In that case the process stop and
+     *     the observation is returned.
+     *
+     *  Graphically, the following process can be represented as the following:
+     *
+     *   pmax ────┬─┬────
+     *            │o│ ┌─┐
+     *         x┌─┤ │ │ │
+     *        ┌─┤ │ ├─┤ │
+     *        └─┴─┴─┴─┴─┘
+     *         0 1 2 3 4
+     *
+     *  Where x represents the failed attempt and o the success one.
+     *
+     *  Intuitively we "see" the returned observations will match
+     *  the underliying probabilities because observations with
+     *  greater probability will have a higher chance of being returned
+     *  than observation with lower one.
      *
      * @param {u64} n - sampling upper limit
      * @param {f32} max - greatest probability of the distribution
      * @return {u64}
      */
-  rejection_sampling(n: u64, max: f32):u64 {
+  rejectionSampling(n: u64, max: f32):u64 {
     while (true) {
       const k = randomInt(0, n-1);
       const x = Math.random()*max;
@@ -46,5 +101,42 @@ export class Sampler {
         return k;
       }
     }
+  }
+
+  /**
+   * Populate repartition
+   *
+   * @param {u64} n - Smpling upper limit
+   */
+  private populateRepartition(n: u64):void {
+    this._repartition = new Float64Array(i32(n));
+
+    this._repartition[0]; this.probability(0);
+
+    for (let i=1; i<i32(n); i++) {
+      this._repartition[i] = this._repartition[i-1] + this.probability(i);
+    }
+  }
+
+  /**
+   * Generates an observation using the inverse cumulative distribution method.
+   *
+   * @param{u64} n - Sampling upper limit.
+   * @return {u64} Observation
+   */
+  inverseCumulativeDistribution(n: u64):u64 {
+    if (this._repartition.length == 0) {
+      this.populateRepartition(n);
+    }
+
+    const x = Math.random()*this._repartition[i32(n-1)];
+
+
+    for (let i=0; i < i32(n); i++) {
+      if (x <= this._repartition[i]) {
+        return u64(i);
+      }
+    }
+    return 0;
   }
 }

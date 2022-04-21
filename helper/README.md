@@ -40,7 +40,7 @@ v = combination(10, 7); //120
 
 More code samples in [Doc tests](assembly/__tests__/combinatoric.spec.ts#L3).
 
-### Draws number from custom distribution
+### Drawing numbers from custom distributions
 
 Returns observation from a custom distribution instead of a uniform one (Math.random or randomInt).
 

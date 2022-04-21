@@ -1,4 +1,5 @@
 import {randomInt} from '../probability/random';
+import {drawHistogram} from './helper';
 
 describe('Doc test', () => {
   it('should be simple to use', () => {
@@ -15,20 +16,19 @@ describe('Doc test', () => {
 });
 
 describe('Blackbox test', () => {
-  // slow
-  xtest('uniform distribution', () => {
-    const a = new Uint32Array(1000);
+  
+  test('uniform distribution', () => {
+    const a = new Uint32Array(41);
 
     for (let i=0; i<a.length; i++) {
       a[i] = 0;
     }
 
-    for (let i=0; i<100000000; i++) {
-      a[i32(randomInt(0, 999))] +=1;
+    for (let i=0; i<1000000; i++) {
+      a[i32(randomInt(0, 40))] +=1;
     }
+    
+    drawHistogram(a, 160);
 
-    for (let i=0; i<a.length; i++) {
-      log<u32>(a[i]);
-    }
-  });
-});
+
+});});

@@ -16,7 +16,6 @@ describe('Doc test', () => {
 });
 
 describe('Blackbox test', () => {
-  
   test('uniform distribution', () => {
     const a = new Uint32Array(41);
 
@@ -27,8 +26,7 @@ describe('Blackbox test', () => {
     for (let i=0; i<1000000; i++) {
       a[i32(randomInt(0, 40))] +=1;
     }
-    
+
     drawHistogram(a, 160);
-
-
-});});
+  });
+});

@@ -15,15 +15,15 @@ import {call} from 'massa-sc-std';
  * ```
  */
 export class Wrapper {
-  origine: string;
+  baseAddress: string;
 
   /**
    * Builds a ERC20 wrapper
    *
-   * @param {string} o - Origine address of the ERC20 smart contract.
+   * @param {string} o - Base address of the ERC20 smart contract.
    */
   constructor(o: string) {
-    this.origine = o;
+    this.baseAddress = o;
   }
 
   /**
@@ -32,7 +32,7 @@ export class Wrapper {
    * @return {string} - name of the token.
    */
   name(): string {
-    return call(this.origine, 'name', 'i', 0);
+    return call(this.baseAddress, 'name', 'i', 0);
   }
 
   /**
@@ -42,6 +42,6 @@ export class Wrapper {
    * @return {u64} - Value of the balance.
    */
   balanceOf(a: string): u64 {
-    return u64(parseInt(call(this.origine, 'balanceOf', a, 0), 10));
+    return u64(parseInt(call(this.baseAddress, 'balanceOf', a, 0), 10));
   }
 }

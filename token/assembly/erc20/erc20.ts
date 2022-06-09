@@ -1,6 +1,13 @@
 /* eslint-disable camelcase */
 /* eslint-disable max-len */
 import {Storage, Context, generate_event} from 'massa-sc-std';
+import {GetAllowanceArgs,
+  SetAllowanceArgs,
+  IncreaseAllowanceArgs,
+  DecreaseAllowanceArgs,
+  MintArgs,
+  TransferArgs,
+  TransferFromArgs} from './json';
 
 const NAME_KEY = 'NAME';
 const SYMBOL_KEY = 'SYMBOL';
@@ -8,8 +15,8 @@ const DECIMALS_KEY = 'DECIMALS';
 const TOTAL_SUPPLY = 'TOTAL_SUPPLY';
 const BALANCE_KEY_PRAEFIX = 'BALANCE_';
 const ALLOWANCE_KEY_PRAEFIX = 'ALLOW_';
-const TRANSFER_EVENT_PRAEFIX = 'TRANSFER';
-const APPROVAL_EVENT_PRAEFIX = 'APPROVAL';
+const TRANSFER_EVENT_NAME = 'TRANSFER';
+const APPROVAL_EVENT_NAME = 'APPROVAL';
 
 /**
  * Constructs an event given a key and arguments
@@ -22,7 +29,9 @@ function constructEvent(key: string, ...args: Array<string>): string {
   return `${key}:`.concat(args.join(','));
 }
 
-// -------------------- BASIC METHODS ---------------------- //
+// ==================================================== //
+// ====================BASIC METHODS=================== //
+// ==================================================== //
 
 /**
  * Returns the name of the token.
@@ -67,19 +76,37 @@ export function totalSupply(): u64 {
   return u64(parseInt(decimals, 10));
 }
 
+// ==================================================== //
+// ==================== BALANCE ======================= //
+// ==================================================== //
+
 /**
  * Returns the balance of a given address.
  *
- * @param {string} address - address
+ * @param {string} address - Address to get balance for.
  *
- * @return {u64} balance amount linked to address.
+ * @return {u64} balance amount for that address.
  */
 export function balanceOf(address: string): u64 {
   const balance = _getBalance(address);
   return u64(parseInt(balance, 10));
 }
 
-// --------------------------- ALLOWANCE ----------------------- //
+// ==================================================== //
+// ==================== ALLOWANCE ===================== //
+// ==================================================== //
+
+/**
+ * Returns the allowance of a given address.
+ *
+ * @param {string} args - stringified JSON object of type GetAllowanceArgs
+ *
+ * @return {u64} remaining allowance amount linked to address.
+ */
+export function allowanceJSON(args: string): u64 {
+  const parsedArgs: GetAllowanceArgs = JSON.parse<GetAllowanceArgs>(args);
+  return allowance(parsedArgs.owner, parsedArgs.spender);
+}
 
 /**
  * Returns the allowance of a given address.
@@ -89,70 +116,125 @@ export function balanceOf(address: string): u64 {
  *
  * @return {u64} remaining allowance amount linked to address.
  */
-export function getAllowance(ownerAddress: string, spenderAddress: string): u64 {
-  const allowance = _getAllowance(ownerAddress, spenderAddress);
+export function allowance(ownerAddress: string, spenderAddress: string): u64 {
+  const allowance = _allowance(ownerAddress, spenderAddress);
   return u64(parseInt(allowance, 10));
+}
+
+// ---------------------------------------------------- //
+/**
+ * Sets the allowance of a given address.
+ *
+ * @param {string} args - stringified JSON object of type SetAllowanceArgs
+ *
+ * @return {boolean} true on success
+ */
+export function approveJSON(args: string): boolean {
+  const parsedArgs: SetAllowanceArgs = JSON.parse<SetAllowanceArgs>(args);
+  return approve(parsedArgs.spender, parsedArgs.amount);
 }
 
 /**
  * Sets the allowance of a given address.
  *
  * @param {string} spenderAddress - spender address
- * @param {string} amount - amount to set an allowance for
+ * @param {u64} amount - amount to set an allowance for
  *
  * @return {boolean} true on success
  */
-export function setAllowance(spenderAddress: string, amount: u64): boolean {
+export function approve(spenderAddress: string, amount: u64): boolean {
   const addresses = Context.get_call_stack();
   const ownerAddress = addresses[0];
-  _setAllowance(ownerAddress, spenderAddress, amount.toString());
-  generate_event(constructEvent(APPROVAL_EVENT_PRAEFIX, ownerAddress, spenderAddress, amount.toString()));
+  _approve(ownerAddress, spenderAddress, amount.toString());
+  generate_event(constructEvent(APPROVAL_EVENT_NAME, ownerAddress, spenderAddress, amount.toString()));
   return true;
+}
+
+// ==================================================== //
+
+/**
+ * Increases the allowance of a given spender address.
+ *
+ * @param {string} args - stringified JSON object of type IncreaseAllowanceArgs
+ *
+ * @return {boolean} true on success
+ */
+export function increaseAllowanceJSON(args: string): boolean {
+  const parsedArgs: IncreaseAllowanceArgs = JSON.parse<IncreaseAllowanceArgs>(args);
+  return increaseAllowance(parsedArgs.spender, parsedArgs.addedAmount);
 }
 
 /**
  * Increases the allowance of a given spender address.
  *
  * @param {string} spenderAddress - spender address
- * @param {string} addedAmount - amount to set an allowance for
+ * @param {string} addedAmount - amount to increase the allowance with
  *
  * @return {boolean} true on success
  */
- export function increaseAllowance(spenderAddress: string, addedAmount: u64): boolean {
+export function increaseAllowance(spenderAddress: string, addedAmount: u64): boolean {
   const addresses = Context.get_call_stack();
   const ownerAddress = addresses[0];
-  const currentAllowance = u64(parseInt(_getAllowance(ownerAddress, spenderAddress), 10));
+  const currentAllowance = u64(parseInt(_allowance(ownerAddress, spenderAddress), 10));
   const newAllowance = currentAllowance + addedAmount;
-  _setAllowance(ownerAddress, spenderAddress, newAllowance.toString());
+  _approve(ownerAddress, spenderAddress, newAllowance.toString());
   return true;
+}
+
+// ==================================================== //
+
+/**
+ * Decreases the allowance of a given spender address.
+ *
+ * @param {string} args - stringified JSON object of type DecreaseAllowanceArgs
+ *
+ * @return {boolean} true on success
+ */
+export function decreaseAllowanceJSON(args: string): boolean {
+  const parsedArgs: DecreaseAllowanceArgs = JSON.parse<DecreaseAllowanceArgs>(args);
+  return decreaseAllowance(parsedArgs.spender, parsedArgs.subtractedAmount);
 }
 
 /**
  * Decreases the allowance of a given spender address.
  *
  * @param {string} spenderAddress - spender address
- * @param {string} subtractedAmount - amount to set an allowance for
+ * @param {string} subtractedAmount - amount to decrease the allowance with
  *
  * @return {boolean} true on success
  */
- export function decreaseAllowance(spenderAddress: string, subtractedAmount: u64): boolean {
+export function decreaseAllowance(spenderAddress: string, subtractedAmount: u64): boolean {
   const addresses = Context.get_call_stack();
   const ownerAddress = addresses[0];
-  const currentAllowance = u64(parseInt(_getAllowance(ownerAddress, spenderAddress), 10));
+  const currentAllowance = u64(parseInt(_allowance(ownerAddress, spenderAddress), 10));
   assert(currentAllowance > subtractedAmount, 'Decreased allowance below zero');
   const newAllowance = currentAllowance - subtractedAmount;
-  _setAllowance(ownerAddress, spenderAddress, newAllowance.toString());
+  _approve(ownerAddress, spenderAddress, newAllowance.toString());
   return true;
 }
 
-// ---------------------- MINTING ------------------ //
+// ==================================================== //
+// ====================== MINTING ===================== //
+// ==================================================== //
+
+/**
+ * Function to allow anyone to mint tokens.
+ *
+ * @param {string} args - stringified JSON object of type MintArgs
+ * @return {void} void
+ *
+ */
+export function mintJSON(args: string): void {
+  const parsedArgs: MintArgs = JSON.parse<MintArgs>(args);
+  return mint(parsedArgs.amount, parsedArgs.amount);
+}
 
 /**
  * Function to allow anyone to mint tokens.
  *
  * @param {string} address - spender address
  * @param {u64} amount - amount to set an allowance for
- *
+ * @return {void} void
  */
 export function mint(address: string, amount: u64): void {
   let supply = totalSupply();
@@ -161,10 +243,24 @@ export function mint(address: string, amount: u64): void {
   let bal = balanceOf(address);
   bal += amount;
   _setBalance(address, bal.toString());
-  generate_event(constructEvent(TRANSFER_EVENT_PRAEFIX, address, amount.toString()));
+  generate_event(constructEvent(TRANSFER_EVENT_NAME, address, amount.toString()));
 }
 
-// ---------------------- TRANSFER ------------------ //
+// ==================================================== //
+// ====================== TRANSFER ==================== //
+// ==================================================== //
+
+/**
+ * Function to transfer ownership of one token to another
+ *
+ * @param {string} args - stringified JSON object of type TransferArgs
+ *
+ * @return {boolean} true on success
+ */
+export function transferJSON(args: string): boolean {
+  const parsedArgs: TransferArgs = JSON.parse<TransferArgs>(args);
+  return transfer(parsedArgs.to, parsedArgs.to);
+}
 
 /**
  * Function to transfer ownership of one token to another
@@ -177,8 +273,22 @@ export function mint(address: string, amount: u64): void {
 export function transfer(to: string, amount: u64): boolean {
   const addresses = Context.get_call_stack();
   const sender = addresses[0];
-  generate_event(constructEvent(TRANSFER_EVENT_PRAEFIX, sender, to, amount.toString()));
+  generate_event(constructEvent(TRANSFER_EVENT_NAME, sender, to, amount.toString()));
   return true;
+}
+
+// ==================================================== //
+
+/**
+ * Function to transfer ownership of one token to another
+ *
+ * @param {string} args - stringified JSON object of type TransferFromArgs
+ *
+ * @return {boolean} true on success
+ */
+export function transferFromJSON(args: string): boolean {
+  const parsedArgs: TransferFromArgs = JSON.parse<TransferFromArgs>(args);
+  return transferFrom(parsedArgs.from, parsedArgs.to, parsedArgs.amount);
 }
 
 /**
@@ -193,16 +303,18 @@ export function transfer(to: string, amount: u64): boolean {
 export function transferFrom(from: string, to: string, amount: u64): boolean {
   const addresses = Context.get_call_stack();
   const spender = addresses[0];
-  const currentAllowance = u64(parseInt( _getAllowance(from, spender), 10));
+  const currentAllowance = u64(parseInt(_allowance(from, spender), 10));
   assert(currentAllowance >= amount, 'Insufficient allowance');
   _transfer(from, to, amount);
   const newAllowance = currentAllowance - amount;
-  _setAllowance(from, spender, newAllowance.toString());
-  generate_event(`TRANSFER:${from}${to}${amount.toString()}`);
+  _approve(from, spender, newAllowance.toString());
+  generate_event(constructEvent(TRANSFER_EVENT_NAME, from, to, amount.toString()));
   return true;
 }
 
-// ---------------------- INTERNAL FUNCTIONS ------------------ //
+// ==================================================== //
+// ================ INTERNAL FUNCTIONS ================ //
+// ==================================================== //
 
 /**
  * Internal function that sets a balance to an address
@@ -253,7 +365,7 @@ function _getBalance(address: string): string {
  * @param {string} amount - amount to set an allowance for
  *
  */
-function _setAllowance(ownerAddress: string, spenderAddress: string, amount: string): void {
+function _approve(ownerAddress: string, spenderAddress: string, amount: string): void {
   Storage.set_data(_allowKey(ownerAddress, spenderAddress), amount);
 }
 
@@ -265,7 +377,7 @@ function _setAllowance(ownerAddress: string, spenderAddress: string, amount: str
  *
  * @return {string} the allowance
  */
-function _getAllowance(ownerAddress: string, spenderAddress: string): string {
+function _allowance(ownerAddress: string, spenderAddress: string): string {
   return Storage.get_data_or_default(_allowKey(ownerAddress, spenderAddress), '0');
 }
 

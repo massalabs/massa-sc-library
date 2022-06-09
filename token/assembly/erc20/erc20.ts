@@ -23,10 +23,10 @@ const APPROVAL_EVENT_NAME = 'APPROVAL';
  * Constructs an event given a key and arguments
  *
  * @param {string} key - event key
- * @param {Array} args - array of string arguments
+ * @param {Array} args - array of string arguments.
  * @return {string} stringified event.
  */
-function constructEvent(key: string, ...args: Array<string>): string {
+function createEvent(key: string, args: Array<string>): string {
   return `${key}:`.concat(args.join(','));
 }
 
@@ -147,7 +147,8 @@ export function approve(spenderAddress: string, amount: u64): boolean {
   const addresses = Context.get_call_stack();
   const ownerAddress = addresses[0];
   _approve(ownerAddress, spenderAddress, amount.toString());
-  generate_event(constructEvent(APPROVAL_EVENT_NAME, ownerAddress, spenderAddress, amount.toString()));
+  const event = createEvent(APPROVAL_EVENT_NAME, [ownerAddress, spenderAddress, amount.toString()]);
+  generate_event(event);
   return true;
 }
 
@@ -208,7 +209,7 @@ export function decreaseAllowance(spenderAddress: string, subtractedAmount: u64)
   const addresses = Context.get_call_stack();
   const ownerAddress = addresses[0];
   const currentAllowance = u64(parseInt(_allowance(ownerAddress, spenderAddress), 10));
-  assert(currentAllowance > subtractedAmount, 'Decreased allowance below zero');
+  assert<boolean>(currentAllowance > subtractedAmount, 'Decreased allowance below zero');
   const newAllowance = currentAllowance - subtractedAmount;
   _approve(ownerAddress, spenderAddress, newAllowance.toString());
   return true;
@@ -244,7 +245,8 @@ export function mint(address: string, amount: u64): void {
   let bal = balanceOf(address);
   bal += amount;
   _setBalance(address, bal.toString());
-  generate_event(constructEvent(TRANSFER_EVENT_NAME, address, amount.toString()));
+  const event = createEvent(TRANSFER_EVENT_NAME, [address, amount.toString()]);
+  generate_event(event);
 }
 
 // ==================================================== //
@@ -274,7 +276,8 @@ export function transferJSON(args: string): boolean {
 export function transfer(to: string, amount: u64): boolean {
   const addresses = Context.get_call_stack();
   const sender = addresses[0];
-  generate_event(constructEvent(TRANSFER_EVENT_NAME, sender, to, amount.toString()));
+  const event = createEvent(TRANSFER_EVENT_NAME, [sender, to, amount.toString()]);
+  generate_event(event);
   return true;
 }
 
@@ -305,11 +308,12 @@ export function transferFrom(from: string, to: string, amount: u64): boolean {
   const addresses = Context.get_call_stack();
   const spender = addresses[0];
   const currentAllowance = u64(parseInt(_allowance(from, spender), 10));
-  assert(currentAllowance >= amount, 'Insufficient allowance');
+  assert<boolean>(currentAllowance >= amount, 'Insufficient allowance');
   _transfer(from, to, amount);
   const newAllowance = currentAllowance - amount;
   _approve(from, spender, newAllowance.toString());
-  generate_event(constructEvent(TRANSFER_EVENT_NAME, from, to, amount.toString()));
+  const event = createEvent(TRANSFER_EVENT_NAME, [from, to, amount.toString()]);
+  generate_event(event);
   return true;
 }
 
@@ -327,7 +331,7 @@ export function transferFrom(from: string, to: string, amount: u64): boolean {
  */
 function _transfer(from: string, to: string, amount: u64): void {
   let fromBalance = balanceOf(from);
-  assert(fromBalance > amount, 'Transfer amount exceeds balance');
+  assert<boolean>(fromBalance > amount, 'Transfer amount exceeds balance');
   let toBalance = balanceOf(to);
   fromBalance -= amount;
   _setBalance(from, fromBalance.toString());

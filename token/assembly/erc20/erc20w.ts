@@ -3,6 +3,11 @@ import {call} from 'massa-sc-std';
 import {JSON} from 'json-as';
 import {DecreaseAllowanceArgs, GetAllowanceArgs, IncreaseAllowanceArgs, MintArgs, SetAllowanceArgs, TransferArgs, TransferFromArgs} from './json';
 
+const mapToBool = (val: string): boolean => {
+  if (val.toLowerCase() === 'true') return true;
+  return false;
+};
+
 /**
  * An ERC20 token wrapper.
  *
@@ -107,7 +112,7 @@ export class Wrapper {
  */
   approve(spender: string, amount: u64): boolean {
     const args = JSON.stringify<SetAllowanceArgs>({spender: spender, amount: amount});
-    return <boolean><unknown>(call(this.baseAddress, 'approveJSON', args, 0));
+    return mapToBool(call(this.baseAddress, 'approveJSON', args, 0));
   }
 
   /**
@@ -120,7 +125,7 @@ export class Wrapper {
  */
   increaseAllowance(spenderAddress: string, addedAmount: u64): boolean {
     const args = JSON.stringify<IncreaseAllowanceArgs>({spender: spenderAddress, addedAmount: addedAmount});
-    return <boolean><unknown>(call(this.baseAddress, 'increaseAllowanceJSON', args, 0));
+    return mapToBool(call(this.baseAddress, 'increaseAllowanceJSON', args, 0));
   }
 
   /**
@@ -133,7 +138,7 @@ export class Wrapper {
  */
   decreaseAllowance(spenderAddress: string, subtractedAmount: u64): boolean {
     const args = JSON.stringify<DecreaseAllowanceArgs>({spender: spenderAddress, subtractedAmount: subtractedAmount});
-    return <boolean><unknown>(call(this.baseAddress, 'decreaseAllowanceJSON', args, 0));
+    return mapToBool(call(this.baseAddress, 'decreaseAllowanceJSON', args, 0));
   }
 
   /**
@@ -158,7 +163,7 @@ export class Wrapper {
  */
   transfer(to: string, amount: u64): boolean {
     const args = JSON.stringify<TransferArgs>({to: to, amount: amount});
-    return <boolean><unknown>(call(this.baseAddress, 'transferJSON', args, 0));
+    return mapToBool(call(this.baseAddress, 'transferJSON', args, 0));
   }
 
   /**
@@ -172,6 +177,6 @@ export class Wrapper {
  */
   transferFrom(from: string, to: string, amount: u64): boolean {
     const args = JSON.stringify<TransferFromArgs>({to: to, from: from, amount: amount});
-    return <boolean><unknown>(call(this.baseAddress, 'transferFromJSON', args, 0));
+    return mapToBool(call(this.baseAddress, 'transferFromJSON', args, 0));
   }
 }

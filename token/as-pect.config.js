@@ -1,3 +1,5 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable max-len */
 module.exports = {
   /**
    * A set of globs passed to the glob package that qualify typescript files for testing.

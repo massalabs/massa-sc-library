@@ -1,3 +1,6 @@
+/* eslint-disable no-unused-vars */
+
+import {JSON} from 'json-as';
 
 /**
  * Set Allowance Arguments

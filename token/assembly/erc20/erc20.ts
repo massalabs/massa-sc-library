@@ -10,14 +10,14 @@ import {GetAllowanceArgs,
   TransferFromArgs} from './json';
 import {JSON} from 'json-as';
 
-const NAME_KEY = 'NAME';
-const SYMBOL_KEY = 'SYMBOL';
-const DECIMALS_KEY = 'DECIMALS';
-const TOTAL_SUPPLY = 'TOTAL_SUPPLY';
-const BALANCE_KEY_PRAEFIX = 'BALANCE_';
-const ALLOWANCE_KEY_PRAEFIX = 'ALLOW_';
-const TRANSFER_EVENT_NAME = 'TRANSFER';
-const APPROVAL_EVENT_NAME = 'APPROVAL';
+export const NAME_KEY = 'NAME';
+export const SYMBOL_KEY = 'SYMBOL';
+export const DECIMALS_KEY = 'DECIMALS';
+export const TOTAL_SUPPLY = 'TOTAL_SUPPLY';
+export const BALANCE_KEY_PRAEFIX = 'BALANCE_';
+export const ALLOWANCE_KEY_PRAEFIX = 'ALLOW_';
+export const TRANSFER_EVENT_NAME = 'TRANSFER';
+export const APPROVAL_EVENT_NAME = 'APPROVAL';
 
 /**
  * Constructs an event given a key and arguments
@@ -73,8 +73,8 @@ export function decimals(): u8 {
  * @return {u64} number of minted tokens.
  */
 export function totalSupply(): u64 {
-  const decimals = Storage.get_data(TOTAL_SUPPLY);
-  return u64(parseInt(decimals, 10));
+  const totalSupply = Storage.get_data_or_default(TOTAL_SUPPLY, '0');
+  return u64(parseInt(totalSupply, 10));
 }
 
 // ==================================================== //

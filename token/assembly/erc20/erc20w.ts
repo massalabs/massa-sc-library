@@ -5,7 +5,7 @@ import {call} from 'massa-sc-std';
  *
  * This class can be used to wrap an ERC20 to simplify caller job.
  *
- * ```assembyscript
+ * ```assemblyscript
  *  ...
  *  const coin = new TokenWrapper(sc_address);
  *  let coin_name = coin.Name();
@@ -20,10 +20,10 @@ export class Wrapper {
   /**
    * Builds a ERC20 wrapper
    *
-   * @param {string} o - Base address of the ERC20 smart contract.
+   * @param {string} baseAddress - Base address of the ERC20 smart contract.
    */
-  constructor(o: string) {
-    this.baseAddress = o;
+  constructor(baseAddress: string) {
+    this.baseAddress = baseAddress;
   }
 
   /**
@@ -32,16 +32,16 @@ export class Wrapper {
    * @return {string} - name of the token.
    */
   name(): string {
-    return call(this.baseAddress, 'name', 'i', 0);
+    return call(this.baseAddress, 'name', '', 0);
   }
 
   /**
    * Returns the address balance.
    *
-   * @param {string} a - Address to get balance from.
-   * @return {u64} - Value of the balance.
+   * @param {string} address - Address to get balance from.
+   * @return {string} - Value of the balance.
    */
-  balanceOf(a: string): u64 {
-    return u64(parseInt(call(this.baseAddress, 'balanceOf', a, 0), 10));
+  balanceOf(address: string): string {
+    return u64(parseInt(call(this.baseAddress, 'balanceOf', address, 0), 10));
   }
 }

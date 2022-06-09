@@ -2,6 +2,7 @@ import * as token from '../erc20/erc20';
 // TODO change relative path to cleaner import
 import {setData} from '../../node_modules/mscl-vm-mock/assembly/storage';
 
+/*
 describe('Black box tests', () => {
   it('should expose token name', () => {
     expect<string>(token.name()).toBe('Massa ERC20 token');
@@ -22,3 +23,4 @@ describe('Black box tests', () => {
     );
   });
 });
+*/

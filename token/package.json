@@ -5,6 +5,10 @@
   "ascMain": "assembly/index.ts",
   "scripts": {
     "test": "asp",
+    "build": "massa-sc-scripts build-sc assembly/index.ts build/index.wasm",
+    "asbuild:debug": "asc assembly/index.ts --transform ./node_modules/@as-pect/core/lib/transform/index.js --transform as-bind   --transform mscl-as-transformer --transform json-as/transform --exportRuntime --explicitStart --use ASC_RTRACE=1 --exportTable --importMemory --runtime incremental --target debug",
+    "asbuild:release": "asc assembly/index.ts --transform as-bind  --transform mscl-as-transformer --transform json-as/transform --exportRuntime --explicitStart --use ASC_RTRACE=1 --exportTable --importMemory --runtime incremental --target release",
+    "asbuild": "npm run asbuild:debug && npm run asbuild:release",
     "fmt": "prettier --write '{*,**/*}.{js,ts,jsx,tsx,json}'",
     "lint:fix": "eslint --fix --ext .ts . && yarn fmt",
     "lint": "eslint --ext .ts . && prettier --check '{*,**/*}.{js,ts,jsx,tsx,json}'"
@@ -23,7 +27,13 @@
     "eslint-plugin-prettier": "^4.0.0",
     "mscl-vm-mock": "https://gitpkg.now.sh/massalabs/massa-sc-library/tool/vm-mock?main",
     "prettier": "^2.6.1",
-    "typescript": "^4.6.3"
+    "typescript": "^4.6.3",
+    "visitor-as": "^0.8.0",
+    "json-as": "^0.2.6",
+    "as-bind": "^0.8.2",
+    "massa-sc-std": "3.2.2",
+    "massa-sc-scripts": "4.0.1",
+    "mscl-as-transformer": "0.0.1"
   },
   "exports": {
     ".": {
@@ -32,6 +42,10 @@
     }
   },
   "dependencies": {
-    "massa-sc-std": "^2.0.0"
+    "json-as": "^0.2.6",
+    "as-bind": "^0.8.2",
+    "massa-sc-std": "3.2.2",
+    "massa-sc-scripts": "4.0.1",
+    "mscl-as-transformer": "0.0.1"
   }
 }

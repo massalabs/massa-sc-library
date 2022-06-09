@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 import {call} from 'massa-sc-std';
+import {JSON} from 'json-as';
 import {DecreaseAllowanceArgs, GetAllowanceArgs, IncreaseAllowanceArgs, MintArgs, SetAllowanceArgs, TransferArgs, TransferFromArgs} from './json';
 
 /**

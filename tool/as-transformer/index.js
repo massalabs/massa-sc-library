@@ -1,6 +1,7 @@
-const {TransformVisitor, SimpleParser} = require('visitor-as');
-const {IdentifierExpression} = require('visitor-as/as');
-const fs = require("fs");
+import {TransformVisitor, SimpleParser} from "visitor-as/dist/index.js";
+import {IdentifierExpression} from "assemblyscript/dist/assemblyscript.js";
+
+import fs from "fs";
 
 class MyTransform extends TransformVisitor {
 
@@ -28,4 +29,6 @@ class MyTransform extends TransformVisitor {
 
 }}
 
-module.exports = new MyTransform();
+const mt =  new MyTransform();
+
+export { mt };

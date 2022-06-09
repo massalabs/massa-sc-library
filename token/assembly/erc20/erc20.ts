@@ -8,6 +8,7 @@ import {GetAllowanceArgs,
   MintArgs,
   TransferArgs,
   TransferFromArgs} from './json';
+import {JSON} from 'json-as';
 
 const NAME_KEY = 'NAME';
 const SYMBOL_KEY = 'SYMBOL';
@@ -226,7 +227,7 @@ export function decreaseAllowance(spenderAddress: string, subtractedAmount: u64)
  */
 export function mintJSON(args: string): void {
   const parsedArgs: MintArgs = JSON.parse<MintArgs>(args);
-  return mint(parsedArgs.amount, parsedArgs.amount);
+  return mint(parsedArgs.address, parsedArgs.amount);
 }
 
 /**
@@ -259,7 +260,7 @@ export function mint(address: string, amount: u64): void {
  */
 export function transferJSON(args: string): boolean {
   const parsedArgs: TransferArgs = JSON.parse<TransferArgs>(args);
-  return transfer(parsedArgs.to, parsedArgs.to);
+  return transfer(parsedArgs.to, parsedArgs.amount);
 }
 
 /**

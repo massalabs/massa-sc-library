@@ -119,7 +119,7 @@ export class Wrapper {
  * @return {boolean} true on success
  */
   increaseAllowance(spenderAddress: string, addedAmount: u64): boolean {
-    const args = JSON.stringify<IncreaseAllowanceArgs>({spender: spenderAddress, amount: addedAmount});
+    const args = JSON.stringify<IncreaseAllowanceArgs>({spender: spenderAddress, addedAmount: addedAmount});
     return <boolean><unknown>(call(this.baseAddress, 'increaseAllowanceJSON', args, 0));
   }
 
@@ -132,7 +132,7 @@ export class Wrapper {
  * @return {boolean} true on success
  */
   decreaseAllowance(spenderAddress: string, subtractedAmount: u64): boolean {
-    const args = JSON.stringify<DecreaseAllowanceArgs>({spender: spenderAddress, amount: subtractedAmount});
+    const args = JSON.stringify<DecreaseAllowanceArgs>({spender: spenderAddress, subtractedAmount: subtractedAmount});
     return <boolean><unknown>(call(this.baseAddress, 'decreaseAllowanceJSON', args, 0));
   }
 

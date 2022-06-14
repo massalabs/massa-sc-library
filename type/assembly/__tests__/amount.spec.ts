@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import {Currency} from '../currency';
 import {Amount} from '../amount';
 
@@ -31,5 +32,36 @@ describe('Blackbox tests', () => {
     expect<bool>(a.add(new Amount(1)).isValid()).toBeFalsy('overflow');
     expect<bool>(a.add(new Amount(0)).isValid()).toBeTruthy('MAX_VALUE + 0');
     expect<bool>((new Amount()).substract(a).isValid()).toBeFalsy('underflow');
+  });
+});
+
+describe('Serialize/Deserialize', () => {
+  test('should serialize/deserialize to and from bytes', () => {
+    const amount = new Amount(100, new Currency());
+
+    // serialize
+    const serializedAmount = Amount.serialize(amount);
+    expect<StaticArray<u8> | null>(serializedAmount).not.toBeNull();
+
+    // deserialize
+    const deserializedAmount = Amount.deserialize(serializedAmount as StaticArray<u8>);
+    expect<Amount | null>(deserializedAmount).not.toBeNull();
+
+    // check validity
+    expect<u64>((deserializedAmount as Amount).value()).toBe(100, 'value method');
+  });
+
+  test('should serialize/deserialize to and from string', () => {
+    const amount = new Amount(100, new Currency());
+
+    // serialize
+    const serializedAmount = Amount.serializeToString(amount) as string;
+
+    // deserialize
+    const deserializedAmount = Amount.deserializeFromStr(serializedAmount) as Amount;
+    expect<Amount | null>(deserializedAmount).not.toBeNull();
+
+    // check validity
+    expect<u64>((deserializedAmount as Amount).value()).toBe(100, 'value method');
   });
 });

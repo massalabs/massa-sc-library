@@ -1,5 +1,7 @@
+/* eslint-disable max-len */
 import {Currency} from './currency';
 import {Valider} from './valider';
+import {ASON} from '@ason/assembly';
 
 
 /**
@@ -118,6 +120,65 @@ export class Amount implements Valider {
      */
   lessThan(a: Amount):bool {
     return this._value < a.value();
+  }
+
+  /**
+     * A static method for serializing an amount to a binary array
+     *
+     * @param {Amount} amount - Amount to serialize.
+     *
+     * @return {StaticArray<u8>}
+     */
+  static serialize(amount: Amount): StaticArray<u8>|null {
+    if (amount.isValid()) {
+      const buffer: StaticArray<u8> = ASON.serialize([amount.value()] as Array<u64>);
+      return buffer;
+    }
+    return null;
+  }
+
+  /**
+     * A static method for serializing an amount to a binary array
+     *
+     * @param {Amount} amount - Amount to serialize.
+     *
+     * @return {StaticArray<u8>}
+     */
+  static serializeToString(amount: Amount): string|null {
+    if (amount.isValid()) {
+      const buffer: StaticArray<u8> = ASON.serialize([amount.value()] as Array<u64>);
+      return buffer.join(',').toString();
+    }
+    return null;
+  }
+
+  /**
+     * A static method for deserializing an amount from a binary array
+     *
+     * @param {StaticArray<u8>} data - data to serialize.
+     *
+     * @return {Amount} - Amount.
+     */
+  static deserialize(data: StaticArray<u8>): Amount|null {
+    const result: Array<u64> = ASON.deserialize<Array<u64>>(data);
+    const amount: Amount = new Amount(<u64>result[0], new Currency());
+    return amount.isValid() ? amount : null;
+  }
+
+  /**
+     * A static method for deserializing an amount from a binary array
+     *
+     * @param {string} data - string data to serialize.
+     *
+     * @return {Amount} - Amount.
+     */
+  static deserializeFromStr(data: string): Amount|null {
+    const newData = data.split(',');
+    const ret = new StaticArray<u8>(newData.length);
+    for (let i = 0; i < newData.length; i++) {
+      ret[i] = U8.parseInt(newData.at(i));
+    }
+    return Amount.deserialize(ret);
   }
 }
 

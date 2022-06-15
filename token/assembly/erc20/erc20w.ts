@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import {call} from 'massa-sc-std';
-import {SetAllowanceArgs} from './json';
+import {SetAllowanceArgs} from './args';
 import {Amount} from 'mscl-type/assembly/amount';
 import {Address} from 'mscl-type/assembly/address';
 
@@ -18,8 +18,8 @@ const mapToBool = (val: string): boolean => {
  *  ...
  *  const coin = new TokenWrapper(sc_address);
  *  let coin_name = coin.name();
- *  let bal = coin.balanceOf(my_address);
- *  print("balance: " + bal.toString() + " of token: " + coin_name);
+ *  let bal = coin.balanceOf(new Address("my_address"));
+ *  print("balance: " + bal.value() + " of token: " + coin_name);
  * ...
  * ```
  */

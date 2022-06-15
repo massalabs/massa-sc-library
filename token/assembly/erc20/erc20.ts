@@ -2,7 +2,7 @@
 /* eslint-disable camelcase */
 /* eslint-disable max-len */
 import {Storage, Context, generate_event} from 'massa-sc-std';
-import {SetAllowanceArgs} from './json';
+import {SetAllowanceArgs} from './args';
 import {Amount} from 'mscl-type/assembly/amount';
 import {Address} from 'mscl-type/assembly/address';
 

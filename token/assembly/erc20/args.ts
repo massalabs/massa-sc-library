@@ -3,9 +3,9 @@
 /* eslint-disable no-unused-vars */
 
 import {ASON} from '@ason/assembly';
-import {Amount} from 'mscl-type/assembly/amount';
-import {Address} from 'mscl-type/assembly/address';
-import {Currency} from 'mscl-type/assembly/currency';
+import {Address} from '../../node_modules/mscl-type/assembly/address';
+import {Amount} from '../../node_modules/mscl-type/assembly/amount';
+import {Currency} from '../../node_modules/mscl-type/assembly/currency';
 
 
 export class SetAllowanceArgs {

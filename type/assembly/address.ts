@@ -97,8 +97,8 @@ export class Address implements Valider {
      */
   static deserialize(data: StaticArray<u8>): Address|null {
     const result: Array<string> = ASON.deserialize<Array<string>>(data);
-    const amount: Address = new Address(<string>result[0]);
-    return amount.isValid() ? amount : null;
+    const address: Address = new Address(<string>result[0]);
+    return address.isValid() ? address : null;
   }
 
   /**

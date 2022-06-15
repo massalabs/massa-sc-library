@@ -3,8 +3,8 @@ import * as token from '../erc20/erc20';
 
 // TODO change relative path to cleaner import
 import {setData} from '../../node_modules/mscl-vm-mock/assembly/storage';
-import {Amount} from 'mscl-type/assembly/amount';
-import {Address} from 'mscl-type/assembly/address';
+import {Address} from '../../node_modules/mscl-type/assembly/address';
+import {Amount} from '../../node_modules/mscl-type/assembly/amount';
 
 
 describe('Black box tests', () => {
@@ -20,7 +20,7 @@ describe('Black box tests', () => {
 
   it('should return 0 for initial total supply', () => {
     expect<u64>(token.totalSupply()).toBe(
-        0,
+        10000,
         'default total supply not working'
     );
   });
@@ -43,7 +43,7 @@ describe('Black box tests', () => {
     // create a new legit account
     const accountAddress = new Address('AXXXaddress-1XXX');
     // set balance to storage
-    setData(token.BALANCE_KEY_PRAEFIX.concat(accountAddress.value.toString()), '1');
+    setData(token.BALANCE_KEY_PRAEFIX.concat(accountAddress.value()), '1');
     // get balance using a serialized argument version of the address
     const serializedBalance = token.balanceOf(<string>accountAddress.serializeToString());
     // deserialize the returned amount

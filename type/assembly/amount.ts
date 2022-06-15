@@ -97,7 +97,7 @@ export class Amount implements Valider {
   }
 
   /**
-     * Substact given amount from existing one.
+     * Substract given amount from existing one.
      *
      * @param {Amount} a - Amount to substract.
      *

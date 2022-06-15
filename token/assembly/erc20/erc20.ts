@@ -23,9 +23,9 @@ function createEvent(key: string, args: Array<string>): string {
   return `${key}:`.concat(args.join(','));
 }
 
-// ==================================================== //
-// ====================BASIC METHODS=================== //
-// ==================================================== //
+// ================================================================= //
+// ====================BASIC OVERWRITABLE METHODS=================== //
+// ================================================================= //
 
 /**
  * Returns the name of the token.
@@ -87,7 +87,7 @@ export function balanceOf(args: string): string {
 export function approve(args: string): boolean {
   const parsedArgs = SetAllowanceArgs.deserializeFromStr(args);
   _approve(parsedArgs.owner(), parsedArgs.spender(), parsedArgs.amount());
-  const event = createEvent(APPROVAL_EVENT_NAME, [parsedArgs.owner(), parsedArgs.spender(), parsedArgs.amount().value().toString()]);
+  const event = createEvent(APPROVAL_EVENT_NAME, [parsedArgs.owner().value(), parsedArgs.spender().value(), parsedArgs.amount().value().toString()]);
   generate_event(event);
   return true;
 }

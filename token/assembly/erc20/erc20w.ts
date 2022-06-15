@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import {call} from 'massa-sc-std';
+import {call, Context} from 'massa-sc-std';
 import {GetAllowanceArgs, SetAllowanceArgs} from './args';
 import {Amount} from 'mscl-type/assembly/amount';
 import {Address} from 'mscl-type/assembly/address';
@@ -89,13 +89,14 @@ export class Wrapper {
   /**
  * Sets the allowance of a given address.
  *
- * @param {Address} ownerAddress - owner address
  * @param {Address} spenderAddress - spender address
  * @param {Amount} approvalAmount - amount to set an allowance for
  *
  * @return {boolean} true on success
  */
-  approve(ownerAddress: Address, spenderAddress: Address, approvalAmount: Amount): boolean {
+  approve(spenderAddress: Address, approvalAmount: Amount): bool {
+    const addresses = Context.get_call_stack();
+    const ownerAddress = new Address(addresses[0]); // TODO: needs to be resolved on native level
     assert(ownerAddress.isValid(), 'Bad owner address format');
     assert(spenderAddress.isValid(), 'Bad spender address format');
     assert(approvalAmount.isValid(), 'Bad approval amount format');
@@ -118,5 +119,47 @@ export class Wrapper {
     const data: string = call(this.baseAddress, 'allowance', <string>args.serializeToString(), 0);
     const amount = Amount.deserializeFromStr(data);
     return <Amount>amount;
+  }
+
+  /**
+ * Increases the allowance of a given spender address.
+   *
+   * @param {Address} spenderAddress - spender address
+   * @param {Amount} addedAmount - amount to increase the allowance with
+   *
+   * @return {boolean} true on success
+   */
+  increaseAllowance(spenderAddress: Address, addedAmount: Amount): bool {
+    const addresses = Context.get_call_stack();
+    const ownerAddress = new Address(addresses[0]); // TODO: needs to be resolved on native level
+    assert(ownerAddress.isValid(), 'Bad owner address format');
+    assert(spenderAddress.isValid(), 'Bad spender address format');
+    assert(addedAmount.isValid(), 'Bad approval amount format');
+    const currentSpenderAllowance: Amount = this.allowance(ownerAddress, spenderAddress);
+    const newAllowance: Amount = currentSpenderAllowance.add(addedAmount);
+    assert(newAllowance.isValid(), 'Overflowed spender allowance');
+    const args = new SetAllowanceArgs(ownerAddress, spenderAddress, newAllowance);
+    return mapToBool(call(this.baseAddress, 'allowance', <string>args.serializeToString(), 0));
+  }
+
+  /**
+ * Decreases the allowance of a given spender address.
+   *
+   * @param {Address} spenderAddress - spender address
+   * @param {Amount} subtractedAmount - amount to decrease the allowance with
+   *
+   * @return {boolean} true on success
+   */
+  decreaseAllowance(spenderAddress: Address, subtractedAmount: Amount): bool {
+    const addresses = Context.get_call_stack();
+    const ownerAddress = new Address(addresses[0]); // TODO: needs to be resolved on native level
+    assert(ownerAddress.isValid(), 'Bad owner address format');
+    assert(spenderAddress.isValid(), 'Bad spender address format');
+    assert(subtractedAmount.isValid(), 'Bad approval amount format');
+    const currentSpenderAllowance: Amount = this.allowance(ownerAddress, spenderAddress);
+    const newAllowance: Amount = currentSpenderAllowance.substract(subtractedAmount);
+    assert(newAllowance.isValid(), 'Underflowed spender allowance');
+    const args = new SetAllowanceArgs(ownerAddress, spenderAddress, newAllowance);
+    return mapToBool(call(this.baseAddress, 'allowance', <string>args.serializeToString(), 0));
   }
 }

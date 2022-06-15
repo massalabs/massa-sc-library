@@ -34,10 +34,19 @@ function createMockVm(memory, createImports, instantiateSync, binary) {
         const v_ptr = wasm.__newString(m[k]);
         return v_ptr;
       },
+      assembly_script_set_data(k_ptr, v_ptr) {
+        const k = wasm.__getString(k_ptr);
+        const v = wasm.__getString(v_ptr);
+        m[k] = v;
+      },
       set_data(k_ptr, v_ptr) {
         const k = wasm.__getString(k_ptr);
         const v = wasm.__getString(v_ptr);
         m[k] = v;
+      },
+      get_data(k_ptr) {
+        const k = wasm.__getString(k_ptr);
+        return m[k];
       },
     },
   };

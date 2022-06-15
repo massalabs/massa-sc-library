@@ -1,26 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable camelcase */
 /* eslint-disable max-len */
-import {Storage, generate_event, Context} from 'massa-sc-std';
-import {GetAllowanceArgs, SetAllowanceArgs, TransferArgs, TransferFromArgs} from './args';
+import {Storage} from 'massa-sc-std';
+import {SetAllowanceArgs, TransferArgs} from './args';
 import {Address} from '../../node_modules/mscl-type/assembly/address';
 import {Amount} from '../../node_modules/mscl-type/assembly/amount';
 
-export const BALANCE_KEY_PRAEFIX = 'BALANCE_';
-export const ALLOWANCE_KEY_PRAEFIX = 'ALLOW_';
-export const TRANSFER_EVENT_NAME = 'TRANSFER';
-export const APPROVAL_EVENT_NAME = 'APPROVAL';
+import * as Erc20 from './erc20';
 
-/**
- * Constructs an event given a key and arguments
- *
- * @param {string} key - event key
- * @param {Array} args - array of string arguments.
- * @return {string} stringified event.
- */
-export function createEvent(key: string, args: Array<string>): string {
-  return `${key}:`.concat(args.join(','));
-}
+export {ALLOWANCE_KEY_PRAEFIX, APPROVAL_EVENT_NAME, BALANCE_KEY_PRAEFIX, TRANSFER_EVENT_NAME} from './erc20';
 
 // ================================================================= //
 // ====================BASIC OVERWRITABLE METHODS=================== //
@@ -32,7 +20,7 @@ export function createEvent(key: string, args: Array<string>): string {
  * @return {string} token name.
  */
 export function name(): string {
-  return 'Massa ERC20 token';
+  return 'Massa ERC20 Token';
 }
 
 /** Returns the symbol of the token.
@@ -66,10 +54,7 @@ export function totalSupply(): u64 {
  * @return {string} serialized amount for that address.
  */
 export function balanceOf(args: string): string {
-  const deserializedAddress = Address.deserializeFromStr(args);
-  assert(deserializedAddress && deserializedAddress.isValid(), 'Bad address format');
-  const balance: Amount = _getBalance(<Address>deserializedAddress);
-  return <string>balance.serializeToString();
+  return Erc20.balanceOf(args);
 }
 
 // ==================================================== //
@@ -79,20 +64,18 @@ export function balanceOf(args: string): string {
 /**
  * Sets the allowance of a given address.
  *
+ * @param {string} sender - Sender address
  * @param {string} args - serialized class instance of type SetAllowanceArgs
  *
  * @return {boolean} true on success
  */
-export function approve(args: string): boolean {
-  const addresses = Context.get_call_stack();
-  const ownerAddress = new Address(addresses[0]); // TODO: needs to be resolved on native level
+export function approve(sender: string, args: string): boolean {
+  const ownerAddress = new Address(sender);
   const parsedArgs = SetAllowanceArgs.deserializeFromStr(args);
   assert(ownerAddress.isValid(), 'Bad owner address format');
   assert(parsedArgs.spender().isValid(), 'Bad spender address format');
   assert(parsedArgs.amount().isValid(), 'Bad approval amount format');
   _approve(ownerAddress, parsedArgs.spender(), parsedArgs.amount());
-  const event = createEvent(APPROVAL_EVENT_NAME, [ownerAddress.value(), parsedArgs.spender().value(), parsedArgs.amount().value().toString()]);
-  generate_event(event);
   return true;
 }
 
@@ -104,23 +87,19 @@ export function approve(args: string): boolean {
  * @return {string} serialized allowance for that address.
  */
 export function allowance(args: string): string {
-  const parsedArgs = GetAllowanceArgs.deserializeFromStr(args);
-  assert(parsedArgs.owner().isValid(), 'Bad owner address format');
-  assert(parsedArgs.spender().isValid(), 'Bad spender address format');
-  const allowance = _allowance(parsedArgs.owner(), parsedArgs.spender());
-  return <string>allowance.serializeToString();
+  return Erc20.allowance(args);
 }
 
 /**
  * Increases the allowance of a given spender address.
  *
+ * @param {string} sender - Sender address
  * @param {string} args - serialized class instance of type ChangeAllowanceArgs
  *
  * @return {boolean} true on success
  */
-export function increaseAllowance(args: string): boolean {
-  const addresses = Context.get_call_stack();
-  const ownerAddress = new Address(addresses[0]); // TODO: needs to be resolved on native level
+export function increaseAllowance(sender: string, args: string): boolean {
+  const ownerAddress = new Address(sender);
   const parsedArgs = SetAllowanceArgs.deserializeFromStr(args);
   assert(ownerAddress.isValid(), 'Bad owner address format');
   assert(parsedArgs.spender().isValid(), 'Bad spender address format');
@@ -129,21 +108,19 @@ export function increaseAllowance(args: string): boolean {
   const newIncreasedAllowance: Amount = currentSpenderAllowance.add(parsedArgs.amount());
   assert(newIncreasedAllowance.isValid(), 'Overflowed spender allowance');
   _approve(ownerAddress, parsedArgs.spender(), newIncreasedAllowance);
-  const event = createEvent(APPROVAL_EVENT_NAME, [ownerAddress.value(), parsedArgs.spender().value(), newIncreasedAllowance.value().toString()]);
-  generate_event(event);
   return true;
 }
 
 /**
  * Decreases the allowance of a given spender address.
  *
+ * @param {string} sender - Sender address
  * @param {string} args - serialized class instance of type ChangeAllowanceArgs
  *
  * @return {boolean} true on success
  */
-export function decreaseAllowance(args: string): boolean {
-  const addresses = Context.get_call_stack();
-  const ownerAddress = new Address(addresses[0]); // TODO: needs to be resolved on native level
+export function decreaseAllowance(sender: string, args: string): boolean {
+  const ownerAddress = new Address(sender);
   const parsedArgs = SetAllowanceArgs.deserializeFromStr(args);
   assert(ownerAddress.isValid(), 'Bad owner address format');
   assert(parsedArgs.spender().isValid(), 'Bad spender address format');
@@ -152,8 +129,6 @@ export function decreaseAllowance(args: string): boolean {
   const newDecreasedAllowance: Amount = currentSpenderAllowance.substract(parsedArgs.amount());
   assert(newDecreasedAllowance.isValid(), 'Underflowed spender allowance');
   _approve(ownerAddress, parsedArgs.spender(), newDecreasedAllowance);
-  const event = createEvent(APPROVAL_EVENT_NAME, [ownerAddress.value(), parsedArgs.spender().value(), newDecreasedAllowance.value().toString()]);
-  generate_event(event);
   return true;
 }
 
@@ -164,13 +139,13 @@ export function decreaseAllowance(args: string): boolean {
 /**
  * Function to transfer token ownership to one account on behalf of another.
  *
+ * @param {string} sender - Sender address
  * @param {string} args - serialized class instance of type TransferFromArgs
  *
  * @return {boolean} true on success
  */
-export function transfer(args: string): boolean {
-  const addresses = Context.get_call_stack();
-  const fromAddress = new Address(addresses[0]); // TODO: needs to be resolved on native level
+export function transfer(sender: string, args: string): boolean {
+  const fromAddress = new Address(sender);
   const parsedArgs = TransferArgs.deserializeFromStr(args);
   assert(fromAddress.isValid(), 'Bad from address format');
   assert(parsedArgs.to().isValid(), 'Bad to address format');
@@ -178,8 +153,6 @@ export function transfer(args: string): boolean {
   const currentSenderBalance: Amount = _getBalance(fromAddress);
   assert(parsedArgs.amount().lessThan(currentSenderBalance), 'Insufficient balance');
   _transfer(fromAddress, parsedArgs.to(), parsedArgs.amount());
-  const event = createEvent(TRANSFER_EVENT_NAME, [fromAddress.value(), parsedArgs.to().value(), parsedArgs.amount().value().toString()]);
-  generate_event(event);
   return true;
 }
 
@@ -191,16 +164,7 @@ export function transfer(args: string): boolean {
  * @return {boolean} true on success
  */
 export function transferFrom(args: string): boolean {
-  const parsedArgs = TransferFromArgs.deserializeFromStr(args);
-  assert(parsedArgs.from().isValid(), 'Bad from address format');
-  assert(parsedArgs.to().isValid(), 'Bad to address format');
-  assert(parsedArgs.amount().isValid(), 'Bad transfer amount format');
-  const currentSenderAllowance: Amount = _allowance(parsedArgs.from(), parsedArgs.to());
-  assert(parsedArgs.amount().lessThan(currentSenderAllowance), 'Insufficient allowance');
-  _transfer(parsedArgs.from(), parsedArgs.to(), parsedArgs.amount());
-  const event = createEvent(TRANSFER_EVENT_NAME, [parsedArgs.from().value(), parsedArgs.to().value(), parsedArgs.amount().value().toString()]);
-  generate_event(event);
-  return true;
+  return Erc20.transferFrom(args);
 }
 
 // ==================================================== //
@@ -281,7 +245,7 @@ function _allowance(ownerAddress: Address, spenderAddress: Address): Amount {
  * @return {string} key to be used for storage hash.
  */
 function _balKey(address: Address): string {
-  return BALANCE_KEY_PRAEFIX.concat(address.value());
+  return Erc20.BALANCE_KEY_PRAEFIX.concat(address.value());
 }
 
 /**
@@ -293,5 +257,5 @@ function _balKey(address: Address): string {
  * @return {string} key to be used for storage hash.
  */
 function _allowKey(ownerAddress: Address, spenderAddress: Address): string {
-  return ALLOWANCE_KEY_PRAEFIX.concat(ownerAddress.value()).concat(spenderAddress.value());
+  return Erc20.ALLOWANCE_KEY_PRAEFIX.concat(ownerAddress.value()).concat(spenderAddress.value());
 }

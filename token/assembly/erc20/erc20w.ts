@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
-import {call, Context} from 'massa-sc-std';
-import {GetAllowanceArgs, SetAllowanceArgs} from './args';
+import {call} from 'massa-sc-std';
+import {GetAllowanceArgs, SetAllowanceArgs, TransferArgs, TransferFromArgs} from './args';
 import {Amount} from 'mscl-type/assembly/amount';
 import {Address} from 'mscl-type/assembly/address';
 import {mapStrToBool} from 'mscl-type/assembly/utils';
@@ -76,7 +76,6 @@ export class Wrapper {
    * @return {Amount} - Value of the balance.
    */
   balanceOf(address: Address): Amount {
-    assert(address.isValid(), 'Bad address format');
     const data: string = call(this.baseAddress, 'balanceOf', <string>address.serializeToString(), 0);
     const amount = Amount.deserializeFromStr(data);
     return <Amount>amount;
@@ -91,13 +90,8 @@ export class Wrapper {
  * @return {boolean} true on success
  */
   approve(spenderAddress: Address, approvalAmount: Amount): bool {
-    const addresses = Context.get_call_stack();
-    const ownerAddress = new Address(addresses[0]); // TODO: needs to be resolved on native level
-    assert(ownerAddress.isValid(), 'Bad owner address format');
-    assert(spenderAddress.isValid(), 'Bad spender address format');
-    assert(approvalAmount.isValid(), 'Bad approval amount format');
-    const args = new SetAllowanceArgs(ownerAddress, spenderAddress, approvalAmount);
-    return mapStrToBool(call(this.baseAddress, 'approveJSON', <string>args.serializeToString(), 0));
+    const args = new SetAllowanceArgs(spenderAddress, approvalAmount);
+    return mapStrToBool(call(this.baseAddress, 'approve', <string>args.serializeToString(), 0));
   }
 
   /**
@@ -109,8 +103,6 @@ export class Wrapper {
    * @return {Amount} - remaining allowance amount linked to address.
    */
   allowance(ownerAddress: Address, spenderAddress: Address): Amount {
-    assert(ownerAddress.isValid(), 'Bad owner address format');
-    assert(spenderAddress.isValid(), 'Bad spender address format');
     const args = new GetAllowanceArgs(ownerAddress, spenderAddress);
     const data: string = call(this.baseAddress, 'allowance', <string>args.serializeToString(), 0);
     const amount = Amount.deserializeFromStr(data);
@@ -126,16 +118,8 @@ export class Wrapper {
    * @return {boolean} true on success
    */
   increaseAllowance(spenderAddress: Address, addedAmount: Amount): bool {
-    const addresses = Context.get_call_stack();
-    const ownerAddress = new Address(addresses[0]); // TODO: needs to be resolved on native level
-    assert(ownerAddress.isValid(), 'Bad owner address format');
-    assert(spenderAddress.isValid(), 'Bad spender address format');
-    assert(addedAmount.isValid(), 'Bad approval amount format');
-    const currentSpenderAllowance: Amount = this.allowance(ownerAddress, spenderAddress);
-    const newAllowance: Amount = currentSpenderAllowance.add(addedAmount);
-    assert(newAllowance.isValid(), 'Overflowed spender allowance');
-    const args = new SetAllowanceArgs(ownerAddress, spenderAddress, newAllowance);
-    return mapStrToBool(call(this.baseAddress, 'allowance', <string>args.serializeToString(), 0));
+    const args = new SetAllowanceArgs(spenderAddress, addedAmount);
+    return mapStrToBool(call(this.baseAddress, 'decreaseAllowance', <string>args.serializeToString(), 0));
   }
 
   /**
@@ -147,15 +131,34 @@ export class Wrapper {
    * @return {boolean} true on success
    */
   decreaseAllowance(spenderAddress: Address, subtractedAmount: Amount): bool {
-    const addresses = Context.get_call_stack();
-    const ownerAddress = new Address(addresses[0]); // TODO: needs to be resolved on native level
-    assert(ownerAddress.isValid(), 'Bad owner address format');
-    assert(spenderAddress.isValid(), 'Bad spender address format');
-    assert(subtractedAmount.isValid(), 'Bad approval amount format');
-    const currentSpenderAllowance: Amount = this.allowance(ownerAddress, spenderAddress);
-    const newAllowance: Amount = currentSpenderAllowance.substract(subtractedAmount);
-    assert(newAllowance.isValid(), 'Underflowed spender allowance');
-    const args = new SetAllowanceArgs(ownerAddress, spenderAddress, newAllowance);
-    return mapStrToBool(call(this.baseAddress, 'allowance', <string>args.serializeToString(), 0));
+    const args = new SetAllowanceArgs(spenderAddress, subtractedAmount);
+    return mapStrToBool(call(this.baseAddress, 'decreaseAllowance', <string>args.serializeToString(), 0));
+  }
+
+  /**
+ * Transfers coins from a sender to a receiver
+   *
+   * @param {Address} toAddress - to address
+   * @param {Amount} amount - amount to transfer
+   *
+   * @return {boolean} true on success
+   */
+  transfer(toAddress: Address, amount: Amount): bool {
+    const args = new TransferArgs(toAddress, amount);
+    return mapStrToBool(call(this.baseAddress, 'transfer', <string>args.serializeToString(), 0));
+  }
+
+  /**
+ * Transfers coins to a new address on behalf of the caller
+   *
+   * @param {Address} fromAddress - from address
+   * @param {Address} toAddress - to address
+   * @param {Amount} amount - amount to transfer
+   *
+   * @return {boolean} true on success
+   */
+  transferFrom(fromAddress: Address, toAddress: Address, amount: Amount): bool {
+    const args = new TransferFromArgs(fromAddress, toAddress, amount);
+    return mapStrToBool(call(this.baseAddress, 'transferFrom', <string>args.serializeToString(), 0));
   }
 }

@@ -2,7 +2,7 @@
 /* eslint-disable camelcase */
 /* eslint-disable max-len */
 import {Storage, Context, generate_event} from 'massa-sc-std';
-import {SetAllowanceArgs} from './args';
+import {GetAllowanceArgs, SetAllowanceArgs} from './args';
 import {Address} from '../../node_modules/mscl-type/assembly/address';
 import {Amount} from '../../node_modules/mscl-type/assembly/amount';
 
@@ -87,9 +87,23 @@ export function balanceOf(args: string): string {
 export function approve(args: string): boolean {
   const parsedArgs = SetAllowanceArgs.deserializeFromStr(args);
   _approve(parsedArgs.owner(), parsedArgs.spender(), parsedArgs.amount());
+  const event = createEvent(APPROVAL_EVENT_NAME, [parsedArgs.owner(), parsedArgs.spender(), parsedArgs.amount().value().toString()]);
+  generate_event(event);
   return true;
 }
 
+/**
+ * Returns the allowance of a given address.
+ *
+ * @param {string} args - serialized class instance of type GetAllowanceArgs
+ *
+ * @return {string} serialized allowance for that address.
+ */
+export function allowance(args: string): string {
+  const parsedArgs = GetAllowanceArgs.deserializeFromStr(args);
+  const allowance = _allowance(parsedArgs.owner(), parsedArgs.spender());
+  return <string>allowance.serializeToString();
+}
 
 // ==================================================== //
 // ================ INTERNAL FUNCTIONS ================ //

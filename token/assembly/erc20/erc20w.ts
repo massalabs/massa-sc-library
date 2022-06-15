@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import {call} from 'massa-sc-std';
-import {SetAllowanceArgs} from './args';
+import {GetAllowanceArgs, SetAllowanceArgs} from './args';
 import {Amount} from 'mscl-type/assembly/amount';
 import {Address} from 'mscl-type/assembly/address';
 
@@ -101,5 +101,22 @@ export class Wrapper {
     assert(approvalAmount.isValid(), 'Bad approval amount format');
     const args = new SetAllowanceArgs(ownerAddress, spenderAddress, approvalAmount);
     return mapToBool(call(this.baseAddress, 'approveJSON', <string>args.serializeToString(), 0));
+  }
+
+  /**
+   * Returns the allowance of a given address
+   *
+   * @param {Address} ownerAddress - owner address
+   * @param {Address} spenderAddress - spender address
+   *
+   * @return {Amount} - remaining allowance amount linked to address.
+   */
+  allowance(ownerAddress: Address, spenderAddress: Address): Amount {
+    assert(ownerAddress.isValid(), 'Bad owner address format');
+    assert(spenderAddress.isValid(), 'Bad spender address format');
+    const args = new GetAllowanceArgs(ownerAddress, spenderAddress);
+    const data: string = call(this.baseAddress, 'allowance', <string>args.serializeToString(), 0);
+    const amount = Amount.deserializeFromStr(data);
+    return <Amount>amount;
   }
 }

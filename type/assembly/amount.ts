@@ -2,7 +2,7 @@
 import {Currency} from './currency';
 import {Valider} from './valider';
 import {ASON} from '@ason/assembly';
-
+import {mapStrToU8} from './utils';
 
 /**
  * Value in currency to express an amount
@@ -166,12 +166,7 @@ export class Amount implements Valider {
      * @return {Amount} - Amount.
      */
   static deserializeFromStr(data: string): Amount|null {
-    const newData = data.split(',');
-    const ret = new StaticArray<u8>(newData.length);
-    for (let i = 0; i < newData.length; i++) {
-      ret[i] = U8.parseInt(newData.at(i));
-    }
-    return Amount.deserialize(ret);
+    return Amount.deserialize(mapStrToU8(data));
   }
 }
 

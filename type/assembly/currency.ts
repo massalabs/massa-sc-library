@@ -1,3 +1,7 @@
+/* eslint-disable max-len */
+import {mapStrToU8} from './utils';
+import {ASON} from '@ason/assembly';
+
 /**
  * Monetary unit used to express a value.
  *
@@ -52,5 +56,51 @@ export class Currency {
      */
   name():string {
     return this._name;
+  }
+
+
+  /**
+   * A class method for serializing an amount to a binary array
+   *
+   * @return {StaticArray<u8>}
+   */
+  serialize(): StaticArray<u8> {
+    const buffer: StaticArray<u8> = ASON.serialize([this.name(),
+      this.minorUnit().toString()] as Array<string>);
+    return buffer;
+  }
+
+  /**
+   * A class method for serializing an amount to a binary array
+   *
+   * @return {StaticArray<u8>}
+   */
+  serializeToString(): string {
+    return this.serialize().join(',').toString();
+  }
+
+  /**
+   * A static method for deserializing an amount from a binary array
+   *
+   * @param {StaticArray<u8>} data - data to serialize.
+   *
+   * @return {Amount} - Amount.
+   */
+  static deserialize(data: StaticArray<u8>): Currency {
+    const result: Array<string> = ASON.deserialize<Array<string>>(data);
+    const name: string = <string>result[0];
+    const units: u8 = U8.parseInt(<string>result[1], 10);
+    return new Currency(name, units);
+  }
+
+  /**
+   * A static method for deserializing a currency from a binary array
+   *
+   * @param {string} data - string data to deserialize.
+   *
+   * @return {Currency} - Amount.
+   */
+  static deserializeFromStr(data: string): Currency {
+    return Currency.deserialize(mapStrToU8(data));
   }
 }

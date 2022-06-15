@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 import {Valider} from './valider';
 import {ASON} from '@ason/assembly';
+import {mapStrToU8} from './utils';
 
 
 /**
@@ -109,11 +110,6 @@ export class Address implements Valider {
      * @return {Address} - Address.
      */
   static deserializeFromStr(data: string): Address|null {
-    const newData = data.split(',');
-    const ret = new StaticArray<u8>(newData.length);
-    for (let i = 0; i < newData.length; i++) {
-      ret[i] = U8.parseInt(newData.at(i));
-    }
-    return Address.deserialize(ret);
+    return Address.deserialize(mapStrToU8(data));
   }
 }

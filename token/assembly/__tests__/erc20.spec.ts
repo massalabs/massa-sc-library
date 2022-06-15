@@ -5,6 +5,7 @@ import * as token from '../erc20/erc20';
 import {setData} from '../../node_modules/mscl-vm-mock/assembly/storage';
 import {Address} from '../../node_modules/mscl-type/assembly/address';
 import {Amount} from '../../node_modules/mscl-type/assembly/amount';
+import {GetAllowanceArgs} from '../erc20/args';
 
 
 describe('Black box tests', () => {
@@ -52,6 +53,40 @@ describe('Black box tests', () => {
     expect<u64>(amount.value()).toBe(
         1,
         'custom balance not working'
+    );
+  });
+
+  it('should return 0 for uninitialized allowance', () => {
+    // create a new legit account
+    const ownerAddress = new Address('AXXXaddress-1XXX-OWNER');
+    const spenderAddress = new Address('AXXXaddress-1XXX-SPENDER');
+    // get allowance using a serialized argument version of the address
+    const args = new GetAllowanceArgs(ownerAddress, spenderAddress);
+    const serializedAllowanceAmount = token.allowance(<string>args.serializeToString());
+    // deserialize the returned allowance amount
+    const amount = <Amount>Amount.deserializeFromStr(serializedAllowanceAmount);
+    // validate
+    expect<u64>(amount.value()).toBe(
+        0,
+        'default allowance not working'
+    );
+  });
+
+  it('should return set allowance', () => {
+    // create a new legit account
+    const ownerAddress = new Address('AXXXaddress-1XXX-OWNER');
+    const spenderAddress = new Address('AXXXaddress-1XXX-SPENDER');
+    // set balance to storage
+    setData(token.ALLOWANCE_KEY_PRAEFIX.concat(ownerAddress.value()).concat(spenderAddress.value()), '1');
+    // get allowance using a serialized argument version of the address
+    const args = new GetAllowanceArgs(ownerAddress, spenderAddress);
+    const serializedAllowanceAmount = token.allowance(<string>args.serializeToString());
+    // deserialize the returned allowance amount
+    const amount = <Amount>Amount.deserializeFromStr(serializedAllowanceAmount);
+    // validate
+    expect<u64>(amount.value()).toBe(
+        1,
+        'custom allowance not working'
     );
   });
 });

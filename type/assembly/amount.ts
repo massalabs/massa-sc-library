@@ -123,33 +123,26 @@ export class Amount implements Valider {
   }
 
   /**
-     * A static method for serializing an amount to a binary array
-     *
-     * @param {Amount} amount - Amount to serialize.
+     * A class method for serializing an amount to a binary array
      *
      * @return {StaticArray<u8>}
      */
-  static serialize(amount: Amount): StaticArray<u8>|null {
-    if (amount.isValid()) {
-      const buffer: StaticArray<u8> = ASON.serialize([amount.value()] as Array<u64>);
+  serialize(): StaticArray<u8>|null {
+    if (this.isValid()) {
+      const buffer: StaticArray<u8> = ASON.serialize([this.value()] as Array<u64>);
       return buffer;
     }
     return null;
   }
 
   /**
-     * A static method for serializing an amount to a binary array
-     *
-     * @param {Amount} amount - Amount to serialize.
+     * A class method for serializing an amount to a binary array
      *
      * @return {StaticArray<u8>}
      */
-  static serializeToString(amount: Amount): string|null {
-    if (amount.isValid()) {
-      const buffer: StaticArray<u8> = ASON.serialize([amount.value()] as Array<u64>);
-      return buffer.join(',').toString();
-    }
-    return null;
+  serializeToString(): string|null {
+    const buffer = this.serialize();
+    return buffer ? buffer.join(',').toString() : null;
   }
 
   /**

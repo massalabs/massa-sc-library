@@ -1,7 +1,6 @@
 /* eslint-disable max-len */
 import {Currency} from '../currency';
 import {Amount} from '../amount';
-import {Address} from '../address';
 
 describe('Doc tests', () => {
   it('should be simple to use', () => {
@@ -41,7 +40,7 @@ describe('Amount Serialize/Deserialize', () => {
     const amount = new Amount(100, new Currency());
 
     // serialize
-    const serializedAmount = Amount.serialize(amount);
+    const serializedAmount = amount.serialize();
     expect<StaticArray<u8> | null>(serializedAmount).not.toBeNull();
 
     // deserialize
@@ -56,51 +55,14 @@ describe('Amount Serialize/Deserialize', () => {
     const amount = new Amount(100, new Currency());
 
     // serialize
-    const serializedAmount = Amount.serializeToString(amount) as string;
+    const serializedAmount = amount.serializeToString();
+    expect<string | null>(serializedAmount).not.toBeNull();
 
     // deserialize
-    const deserializedAmount = Amount.deserializeFromStr(serializedAmount) as Amount;
+    const deserializedAmount = Amount.deserializeFromStr(serializedAmount as string) as Amount;
     expect<Amount | null>(deserializedAmount).not.toBeNull();
 
     // check validity
     expect<u64>((deserializedAmount as Amount).value()).toBe(100, 'value method');
-  });
-});
-
-describe('Address Serialize/Deserialize', () => {
-  test('should serialize/deserialize to and from bytes', () => {
-    const address = new Address('A1NRGxGKzvbTftYGKD5NWrn2pJ6DSNvBMMy29AUipr3uhLwQRe5');
-
-    // serialize
-    const serializedAddress = Address.serialize(address);
-    expect<StaticArray<string> | null>(serializedAddress).not.toBeNull();
-
-    // deserialize
-    const deserializedAddress = Address.deserialize(serializedAddress as StaticArray<u8>);
-    expect<Address | null>(deserializedAddress).not.toBeNull();
-
-    // check validity
-    expect<string>((deserializedAddress as Address).value()).toBe(address, 'value method');
-  });
-
-  test('should serialize/deserialize to and from string', () => {
-    const address = new Address('A1NRGxGKzvbTftYGKD5NWrn2pJ6DSNvBMMy29AUipr3uhLwQRe5');
-
-    // serialize
-    const serializedAddress = Address.serializeToString(address) as string;
-
-    // deserialize
-    const deserializedAddress = Address.deserializeFromStr(serializedAddress) as Address;
-    expect<Address | null>(deserializedAddress).not.toBeNull();
-
-    // check validity
-    expect<string>((deserializedAddress as Address).value()).toBe(address, 'value method');
-  });
-
-  test('should show invalid on bad address', () => {
-    const address = new Address('X1NRGxGKzvbTftYGKD5NWrn2pJ6DSNvBMMy29AUipr3uhLwQRe5');
-
-    // check validity
-    expect<bool>(address.isValid()).toBeFalsy('Wrong address format');
   });
 });

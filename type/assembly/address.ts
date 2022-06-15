@@ -68,31 +68,24 @@ export class Address implements Valider {
   /**
      * A static method for serializing an address to a binary array
      *
-     * @param {Address} address - Address to serialize.
-     *
      * @return {StaticArray<u8>}
      */
-  static serialize(address: Address): StaticArray<u8>|null {
-    if (address.isValid()) {
-      const buffer: StaticArray<u8> = ASON.serialize([address.value()] as Array<string>);
+  serialize(): StaticArray<u8>|null {
+    if (this.isValid()) {
+      const buffer: StaticArray<u8> = ASON.serialize([this.value()] as Array<string>);
       return buffer;
     }
     return null;
   }
 
   /**
-     * A static method for serializing an address to a binary array
+     * A class method for serializing an address to a binary array
      *
-     * @param {Address} address - Address to serialize.
-     *
-     * @return {StaticArray<u8>}
+     * @return {string|null}
      */
-  static serializeToString(address: Address): string|null {
-    if (address.isValid()) {
-      const buffer: StaticArray<u8> = ASON.serialize([address.value()] as Array<string>);
-      return buffer.join(',').toString();
-    }
-    return null;
+  serializeToString(): string|null {
+    const buffer = this.serialize();
+    return buffer ? buffer.join(',').toString() : null;
   }
 
   /**

@@ -1,21 +1,11 @@
 /* eslint-disable max-len */
 /* eslint-disable require-jsdoc */
 /* eslint-disable no-unused-vars */
-
 import {ASON} from '@ason/assembly';
 import {Address} from '../../node_modules/mscl-type/assembly/address';
 import {Amount} from '../../node_modules/mscl-type/assembly/amount';
 import {Currency} from '../../node_modules/mscl-type/assembly/currency';
-
-
-const mapStrToU8 = (data: string): StaticArray<u8> => {
-  const newData = data.split(',');
-  const ret = new StaticArray<u8>(newData.length);
-  for (let i = 0; i < newData.length; i++) {
-    ret[i] = U8.parseInt(newData.at(i));
-  }
-  return ret;
-};
+import {mapStrToU8} from '../../node_modules/mscl-type/assembly/utils';
 
 export class SetAllowanceArgs {
   private _owner: Address;
@@ -145,30 +135,9 @@ export class GetAllowanceArgs {
 
 // =====================================
 
-/*
-
-export class IncreaseAllowanceArgs {
-  spender: string;
-  addedAmount: u64;
-}
-
-
-export class DecreaseAllowanceArgs {
-  spender: string;
-  subtractedAmount: u64;
-}
-
-
-export class TransferArgs {
-  to: string;
-  amount: u64;
-}
-
 
 export class TransferFromArgs {
-  to: string;
   from: string;
+  to: string;
   amount: u64;
 }
-
-*/

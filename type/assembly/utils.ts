@@ -6,3 +6,8 @@ export const mapStrToU8 = (data: string): StaticArray<u8> => {
   }
   return ret;
 };
+
+export const mapStrToBool = (val: string): boolean => {
+  if (val.toLowerCase() === 'true') return true;
+  return false;
+};

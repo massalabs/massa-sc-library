@@ -3,11 +3,7 @@ import {call, Context} from 'massa-sc-std';
 import {GetAllowanceArgs, SetAllowanceArgs} from './args';
 import {Amount} from 'mscl-type/assembly/amount';
 import {Address} from 'mscl-type/assembly/address';
-
-const mapToBool = (val: string): boolean => {
-  if (val.toLowerCase() === 'true') return true;
-  return false;
-};
+import {mapStrToBool} from 'mscl-type/assembly/utils';
 
 /**
  * An ERC20 token wrapper.
@@ -101,7 +97,7 @@ export class Wrapper {
     assert(spenderAddress.isValid(), 'Bad spender address format');
     assert(approvalAmount.isValid(), 'Bad approval amount format');
     const args = new SetAllowanceArgs(ownerAddress, spenderAddress, approvalAmount);
-    return mapToBool(call(this.baseAddress, 'approveJSON', <string>args.serializeToString(), 0));
+    return mapStrToBool(call(this.baseAddress, 'approveJSON', <string>args.serializeToString(), 0));
   }
 
   /**
@@ -139,7 +135,7 @@ export class Wrapper {
     const newAllowance: Amount = currentSpenderAllowance.add(addedAmount);
     assert(newAllowance.isValid(), 'Overflowed spender allowance');
     const args = new SetAllowanceArgs(ownerAddress, spenderAddress, newAllowance);
-    return mapToBool(call(this.baseAddress, 'allowance', <string>args.serializeToString(), 0));
+    return mapStrToBool(call(this.baseAddress, 'allowance', <string>args.serializeToString(), 0));
   }
 
   /**
@@ -160,6 +156,6 @@ export class Wrapper {
     const newAllowance: Amount = currentSpenderAllowance.substract(subtractedAmount);
     assert(newAllowance.isValid(), 'Underflowed spender allowance');
     const args = new SetAllowanceArgs(ownerAddress, spenderAddress, newAllowance);
-    return mapToBool(call(this.baseAddress, 'allowance', <string>args.serializeToString(), 0));
+    return mapStrToBool(call(this.baseAddress, 'allowance', <string>args.serializeToString(), 0));
   }
 }

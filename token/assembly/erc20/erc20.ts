@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable camelcase */
 /* eslint-disable max-len */
-import {Storage, Context, generate_event} from 'massa-sc-std';
+import {Storage, generate_event} from 'massa-sc-std';
 import {GetAllowanceArgs, SetAllowanceArgs} from './args';
 import {Address} from '../../node_modules/mscl-type/assembly/address';
 import {Amount} from '../../node_modules/mscl-type/assembly/amount';
-
 
 export const BALANCE_KEY_PRAEFIX = 'BALANCE_';
 export const ALLOWANCE_KEY_PRAEFIX = 'ALLOW_';

@@ -1,7 +1,8 @@
 /* eslint-disable max-len */
 import {call} from 'massa-sc-std';
-import {JSON} from 'json-as';
-import {DecreaseAllowanceArgs, GetAllowanceArgs, IncreaseAllowanceArgs, MintArgs, SetAllowanceArgs, TransferArgs, TransferFromArgs} from './json';
+import {SetAllowanceArgs} from './json';
+import {Amount} from 'mscl-type/assembly/amount';
+import {Address} from 'mscl-type/assembly/address';
 
 const mapToBool = (val: string): boolean => {
   if (val.toLowerCase() === 'true') return true;
@@ -62,121 +63,43 @@ export class Wrapper {
   }
 
   /**
-   * Returns the token decimals.
-   *
-   * @return {string} - decimals of the token.
-   */
-  decimals(): u8 {
-    return u8(parseInt(call(this.baseAddress, 'decimals', '', 0), 10));
-  }
-
-  /**
    * Returns the token total supply.
    *
-   * @return {u64} - number of minted tokens.
+   * @return {Amount} - number of minted tokens.
    */
-  totalSupply(): u64 {
-    return u64(parseInt(call(this.baseAddress, 'totalSupply', '', 0), 10));
+  totalSupply(): Amount {
+    const data: string = call(this.baseAddress, 'totalSupply', '', 0);
+    const amount = U64.parseInt(data, 10);
+    return new Amount(amount);
   }
 
   /**
    * Returns the address balance.
    *
-   * @param {string} address - Address to get balance for.
-   * @return {u64} - Value of the balance.
+   * @param {Address} address - Address to get balance for.
+   * @return {Amount} - Value of the balance.
    */
-  balanceOf(address: string): u64 {
-    return u64(parseInt(call(this.baseAddress, 'balanceOf', address, 0), 10));
-  }
-
-  /**
-   * Returns the allowance of a given address.
-   *
-   * @param {string} owner - owner address
-   * @param {string} spender - spender address
-   *
-   * @return {u64} remaining allowance amount linked to address.
-   */
-  allowance(owner: string, spender: string): u64 {
-    const args = JSON.stringify<GetAllowanceArgs>({owner: owner, spender: spender});
-    return u64(parseInt(call(this.baseAddress, 'allowanceJSON', args, 0), 10));
+  balanceOf(address: Address): Amount {
+    assert(address.isValid(), 'Bad address format');
+    const data: string = call(this.baseAddress, 'balanceOf', <string>address.serializeToString(), 0);
+    const amount = Amount.deserializeFromStr(data);
+    return <Amount>amount;
   }
 
   /**
  * Sets the allowance of a given address.
  *
- * @param {string} spender - spender address
- * @param {u64} amount - amount to set an allowance for
+ * @param {Address} ownerAddress - owner address
+ * @param {Address} spenderAddress - spender address
+ * @param {Amount} approvalAmount - amount to set an allowance for
  *
  * @return {boolean} true on success
  */
-  approve(spender: string, amount: u64): boolean {
-    const args = JSON.stringify<SetAllowanceArgs>({spender: spender, amount: amount});
-    return mapToBool(call(this.baseAddress, 'approveJSON', args, 0));
-  }
-
-  /**
- * Sets the allowance of a given address.
- *
- * @param {string} spenderAddress - spender address
- * @param {string} addedAmount - amount to increase the allowance with
- *
- * @return {boolean} true on success
- */
-  increaseAllowance(spenderAddress: string, addedAmount: u64): boolean {
-    const args = JSON.stringify<IncreaseAllowanceArgs>({spender: spenderAddress, addedAmount: addedAmount});
-    return mapToBool(call(this.baseAddress, 'increaseAllowanceJSON', args, 0));
-  }
-
-  /**
- * Sets the allowance of a given address.
- *
- * @param {string} spenderAddress - spender address
- * @param {string} subtractedAmount - amount to decrease the allowance with
- *
- * @return {boolean} true on success
- */
-  decreaseAllowance(spenderAddress: string, subtractedAmount: u64): boolean {
-    const args = JSON.stringify<DecreaseAllowanceArgs>({spender: spenderAddress, subtractedAmount: subtractedAmount});
-    return mapToBool(call(this.baseAddress, 'decreaseAllowanceJSON', args, 0));
-  }
-
-  /**
-   * Function to allow anyone to mint tokens.
-   *
-   * @param {string} address - spender address
-   * @param {u64} amount - amount to set an allowance for
-   * @return {void} void
-   */
-  mint(address: string, amount: u64): void {
-    const args = JSON.stringify<MintArgs>({address: address, amount: amount});
-    call(this.baseAddress, 'mintJSON', args, 0);
-  }
-
-  /**
- * Function to transfer ownership of one token to another
- *
- * @param {string} to - receiver address
- * @param {u64} amount - amount of tokens to transfer to the new owner
- *
- * @return {boolean} true on success
- */
-  transfer(to: string, amount: u64): boolean {
-    const args = JSON.stringify<TransferArgs>({to: to, amount: amount});
-    return mapToBool(call(this.baseAddress, 'transferJSON', args, 0));
-  }
-
-  /**
- * Function to transfer ownership of one token to another
- *
- * @param {string} from - sender address
- * @param {string} to - receiver address
- * @param {u64} amount - amount of tokens to transfer to the receiver
- *
- * @return {boolean} true on success
- */
-  transferFrom(from: string, to: string, amount: u64): boolean {
-    const args = JSON.stringify<TransferFromArgs>({to: to, from: from, amount: amount});
-    return mapToBool(call(this.baseAddress, 'transferFromJSON', args, 0));
+  approve(ownerAddress: Address, spenderAddress: Address, approvalAmount: Amount): boolean {
+    assert(ownerAddress.isValid(), 'Bad owner address format');
+    assert(spenderAddress.isValid(), 'Bad spender address format');
+    assert(approvalAmount.isValid(), 'Bad approval amount format');
+    const args = new SetAllowanceArgs(ownerAddress, spenderAddress, approvalAmount);
+    return mapToBool(call(this.baseAddress, 'approveJSON', <string>args.serializeToString(), 0));
   }
 }

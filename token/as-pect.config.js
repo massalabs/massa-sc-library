@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable max-len */
 module.exports = {

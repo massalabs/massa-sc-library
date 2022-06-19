@@ -183,7 +183,7 @@ function _transfer(from: Address, to: Address, amount: u64): bool {
 }
 
 // ==================================================== //
-// ==================== ALLOWANCE ===================== //
+// ====                 ALLOWANCE                  ==== //
 // ==================================================== //
 
 
@@ -341,8 +341,8 @@ function _approve(
  * - or if allowance or transfer is not possible, both are discarded.
  *
  * @param {string} args - byte string with the following format:
- * - the owner's id (address);
- * - the recipient's id (address);
+ * - the owner's account (address);
+ * - the recipient's account (address);
  * - the amount (u64).
  *
  * @return {string} - boolean value ("1" or "0")
@@ -354,7 +354,7 @@ export function transferFrom(args: string): string {
   let offset = ownerAddress.fromStringSegment(args);
 
   const recipientAddress = new Address();
-  offset = recipientAddress.fromStringSegment(args);
+  offset = recipientAddress.fromStringSegment(args, offset);
 
   const amount = ByteArray.fromByteString(args.substr(offset, 8)).toU64();
 

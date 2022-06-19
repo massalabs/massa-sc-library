@@ -1,4 +1,51 @@
-import {Storage} from 'massa-sc-std';
+import {Storage, Context, generate_event} from 'massa-sc-std';
+import {Address, ByteArray} from 'mscl-type';
+
+const TRANSFER_EVENT_NAME = 'TRANSFER';
+const APPROVAL_EVENT_NAME = 'APPROVAL';
+
+/**
+ * Returns callee's address.
+ * @return {Address}
+ */
+function calleeAddress(): Address {
+  return Address.fromByteString(Context.get_call_stack()[0]);
+}
+
+/**
+ * Returns caller's address.
+ *
+ * TODO move this function to massa-sc-std
+ * @return {Address}
+ */
+function callerAddress(): Address {
+  return Address.fromByteString(Context.get_call_stack()[0]);
+}
+
+/**
+ * Constructs an event given a key and arguments
+ *
+ * @param {string} key - event key
+ * @param {Array} args - array of string arguments.
+ * @return {string} stringified event.
+ */
+export function createEvent(key: string, args: Array<string>): string {
+  return `${key}:`.concat(args.join(','));
+}
+
+/**
+ * Returns the version of this smart contract.
+ * This versioning is following the best practices defined in https://semver.org/.
+ *
+ * @return {string}
+ */
+export function version(): string {
+  return '0.0.0';
+}
+
+// ======================================================== //
+// ==================== TOKEN ATTIBUTES =================== //
+// ======================================================== //
 
 /**
  * Returns the name of the token.
@@ -6,7 +53,7 @@ import {Storage} from 'massa-sc-std';
  * @return {string} token name.
  */
 export function name(): string {
-  return 'Massa ERC20 token';
+  return 'Standard token implementation';
 }
 
 /** Returns the symbol of the token.
@@ -14,40 +61,327 @@ export function name(): string {
  * @return {string} token symbol.
  */
 export function symbol(): string {
-  return 'MET';
+  return 'STI';
 }
 
 /**
- * Returns the number of decimals of the token.
+ * Returns the total token supply.
  *
- * Balance amout being a decimal number, this function returns
- * the maximal size (number of digits) of the fractional part (digits
- * after the decimal separator, in general `.`) of the amout.
+ * The number of tokens that were initially minted.
  *
- * @return {u8} number of decimals.
+ * @return {string} - u64
  */
-export function decimals(): u8 {
-  return 6;
+export function totalSupply(): string {
+  return '10000';
+}
+
+// ==================================================== //
+// ====                 BALANCE                    ==== //
+// ==================================================== //
+
+/**
+ * Returns the balance of an account.
+ *
+ * @param {string} args - byte string containing an owner's account (Address).
+ *
+ * @return {string} - u64
+ */
+export function balanceOf(args: string): string {
+  const addr = Address.fromByteString(args);
+
+  const r = addr.isValid() ? _balance(addr) : <u64>NaN;
+  return r.toString();
 }
 
 /**
- * Returns the total supply of token.
+ * Returns the balance of a given address.
  *
- * Number of coins that were initially minted.
+ * @param {Address} address - address to get the balance for
  *
- * @return {u64} number of minted token.
+ * @return {u64}
  */
-export function totalSupply(): u64 {
-  return 10000;
+function _balance(address: Address): u64 {
+  const bal = Storage.get_data_or_default(address.toByteString(), '0');
+  return U64.parseInt(bal, 10);
 }
 
 /**
- * Returns the balance of given address.
+ * Sets the balance of a given address.
  *
- * @param {string} a - address
+ * @param {Address} address - address to set the balance for
+ * @param {u64} balance
  *
- * @return {u64} amout linked to address.
  */
-export function balanceOf(a: string): string {
-  return Storage.get_data_or_default('bal'.concat(a), '0');
+function _setBalance(address: Address, balance: u64): void {
+  Storage.set_data(address.toByteString(), balance.toString());
+}
+
+// ==================================================== //
+// ====                 TRANSFER                   ==== //
+// ==================================================== //
+
+/**
+ * Transfers tokens from the caller's account to the recipient's account.
+ *
+ * @param {string} args - byte string with the following format:
+ * - the recipient's id (address)
+ * - the number of tokens (u64).
+ *
+ * @return {string} - boolean value ("1" or "0")
+ */
+export function transfer(args: string): string {
+  const ownerAddress = callerAddress();
+
+  const toAddress = new Address();
+  const offset = toAddress.fromStringSegment(args);
+
+  const amount = ByteArray.fromByteString(args.substr(offset, 8)).toU64();
+
+  if (!toAddress.isValid() || isNaN(amount)) {
+    return '0';
+  }
+
+  if (!_transfer(ownerAddress, toAddress, amount)) {
+    return '0';
+  }
+
+  const event = createEvent(
+      TRANSFER_EVENT_NAME,
+      [
+        ownerAddress.toByteString(),
+        toAddress.toByteString(),
+        amount.toString(),
+      ]);
+  generate_event(event);
+
+  return '1';
+}
+
+/**
+ * Transfers tokens from the caller's account to the recipient's account.
+ *
+ * @param {Address} from - sender address
+ * @param {Address} to - recipient address
+ * @param {u64} amount - number of token to transfer
+ *
+ * @return {bool}
+ */
+function _transfer(from: Address, to: Address, amount: u64): bool {
+  const currentFromBalance = _balance(from);
+  const currentToBalance = _balance(to);
+  const newTobalance = currentToBalance + amount;
+
+  if (currentFromBalance < amount && // underflow of balance from
+    newTobalance < currentToBalance) { // overflow of balance to
+    return false;
+  }
+
+  _setBalance(from, currentFromBalance - amount);
+  _setBalance(to, newTobalance);
+
+  return true;
+}
+
+// ==================================================== //
+// ==================== ALLOWANCE ===================== //
+// ==================================================== //
+
+
+/**
+ * Returns the allowance set on the owner's account for the spender.
+ *
+ * @param {string} args - byte string with the following format:
+ * - the owner's id (address)
+ * - the spender's id (address).
+ *
+ * @return {string} - u64
+ */
+export function allowance(args: string): string {
+  const ownerAddress = new Address();
+  const offset = ownerAddress.fromStringSegment(args);
+
+  const spenderAddress = new Address();
+  spenderAddress.fromStringSegment(args, offset);
+
+  const r = ownerAddress.isValid() && spenderAddress.isValid() ?
+              _allowance(ownerAddress, spenderAddress) :
+              <u64>NaN;
+
+  return r.toString();
+}
+
+/**
+ * Returns the allowance set on the owner's account for the spender.
+ *
+ * @param {Address} ownerAddress - owner's id
+ * @param {Address} spenderAddress - spender's id
+ *
+ * @return {u64} the allowance
+ */
+function _allowance(ownerAddress: Address, spenderAddress: Address): u64 {
+  const allow = Storage.get_data_or_default(
+      ownerAddress.toByteString().concat(spenderAddress.toByteString()),
+      '0');
+  return U64.parseInt(allow, 10);
+}
+
+/**
+ * Increases the allowance of the spender on the owner's account by the amount.
+ *
+ * This function can only be called by the owner.
+ *
+ * @param {string} args - byte string with the following format:
+ * - the spender's id (address);
+ * - the amount (u64).
+ *
+ * @return {string} - boolean value ("1" or "0")
+ */
+export function increaseAllowance(args: string): string {
+  const ownerAddress = callerAddress();
+
+  const spenderAddress = new Address();
+  const offset = spenderAddress.fromStringSegment(args);
+
+  const amount = ByteArray.fromByteString(args.substr(offset, 8)).toU64();
+
+  if (!spenderAddress.isValid() || isNaN(amount)) {
+    return '0';
+  }
+
+  const newAllowance = _allowance(ownerAddress, spenderAddress) + amount;
+
+  if (newAllowance < amount) {
+    return '0'; // would result in an overflow
+  }
+
+  _approve(ownerAddress, spenderAddress, newAllowance);
+
+  const event = createEvent(
+      APPROVAL_EVENT_NAME,
+      [
+        ownerAddress.toByteString(),
+        spenderAddress.toByteString(),
+        newAllowance.toString(),
+      ]);
+  generate_event(event);
+
+  return '1';
+}
+
+/**
+ * Decreases the allowance of the spender the on owner's account  by the amount.
+ *
+ * This function can only be called by the owner.
+ *
+ * @param {string} args - byte string with the following format:
+ * - the spender's id (address);
+ * - the amount (u64).
+ *
+ * @return {string} - boolean value ("1" or "0")
+ */
+export function decreaseAllowance(args: string): string {
+  const ownerAddress = callerAddress();
+
+  const spenderAddress = new Address();
+  const offset = spenderAddress.fromStringSegment(args);
+
+  const amount = ByteArray.fromByteString(args.substr(offset, 8)).toU64();
+
+  if (!spenderAddress.isValid() || isNaN(amount)) {
+    return '0';
+  }
+
+  const current = _allowance(ownerAddress, spenderAddress);
+
+  if (current < amount) {
+    return '0'; // underflow
+  }
+
+  const newAllowance = current - amount;
+
+  _approve(ownerAddress, spenderAddress, newAllowance);
+
+  const event = createEvent(
+      APPROVAL_EVENT_NAME,
+      [
+        ownerAddress.toByteString(),
+        spenderAddress.toByteString(),
+        newAllowance.toString(),
+      ]);
+  generate_event(event);
+
+  return '1';
+}
+
+/**
+ * Sets the allowance of the spender on the owner's account.
+ *
+ * @param {Address} ownerAddress - owner address
+ * @param {Address} spenderAddress - spender address
+ * @param {u64} amount - amount to set an allowance for
+ *
+ */
+function _approve(
+    ownerAddress: Address,
+    spenderAddress: Address,
+    amount: u64): void {
+  Storage.set_data(
+      ownerAddress.toByteString().concat(spenderAddress.toByteString()),
+      amount.toString());
+}
+
+/**
+ * Transfers token ownership from the owner's account to the recipient's account
+ * using the spender's allowanc
+ * e.
+ *
+ * This function can only be called by the spender.
+ * This function is atomic:
+ * - both allowance and transfer are executed if possible;
+ * - or if allowance or transfer is not possible, both are discarded.
+ *
+ * @param {string} args - byte string with the following format:
+ * - the owner's id (address);
+ * - the recipient's id (address);
+ * - the amount (u64).
+ *
+ * @return {string} - boolean value ("1" or "0")
+ */
+export function transferFrom(args: string): string {
+  const spenderAddress = callerAddress();
+
+  const ownerAddress = new Address();
+  let offset = ownerAddress.fromStringSegment(args);
+
+  const recipientAddress = new Address();
+  offset = recipientAddress.fromStringSegment(args);
+
+  const amount = ByteArray.fromByteString(args.substr(offset, 8)).toU64();
+
+  if (!ownerAddress.isValid() || !recipientAddress.isValid() || isNaN(amount)) {
+    return '0';
+  }
+
+  const spenderAllowance = _allowance(ownerAddress, spenderAddress);
+
+  if (spenderAllowance < amount) {
+    return '0';
+  }
+
+  if (!_transfer(ownerAddress, recipientAddress, amount)) {
+    return '0';
+  }
+
+  _approve(ownerAddress, spenderAddress, spenderAllowance - amount);
+
+  const event = createEvent(
+      TRANSFER_EVENT_NAME,
+      [
+        ownerAddress.toByteString(),
+        recipientAddress.toByteString(),
+        amount.toString(),
+      ]);
+  generate_event(event);
+
+  return '1';
 }

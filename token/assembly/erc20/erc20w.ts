@@ -18,16 +18,16 @@ import {Address, Currency, Amount, ByteArray} from 'mscl-type';
  * ```
  */
 export class TokenWrapper {
-  origine: string;
+  origin: string;
   currency: Currency;
 
   /**
    * Builds a token wrapper
    *
-   * @param {Address} origine - Origine address of the smart contract.
+   * @param {Address} origin - Origin address of the smart contract.
    */
-  constructor(origine: Address) {
-    this.origine = origine.toByteString();
+  constructor(origin: Address) {
+    this.origin = origin.toByteString();
   }
 
   /**
@@ -37,7 +37,7 @@ export class TokenWrapper {
  * @return {string}
  */
   version(): string {
-    return call(this.origine, 'version', '?', 0);
+    return call(this.origin, 'version', '?', 0);
   }
 
   /**
@@ -46,7 +46,7 @@ export class TokenWrapper {
    * @return {string} - name of the token.
    */
   name(): string {
-    return call(this.origine, 'name', '?', 0);
+    return call(this.origin, 'name', '?', 0);
   }
 
   /** Returns the symbol of the token.
@@ -54,7 +54,7 @@ export class TokenWrapper {
  * @return {string} token symbol.
  */
   symbol(): string {
-    return call(this.origine, 'symbol', '?', 0);
+    return call(this.origin, 'symbol', '?', 0);
   }
 
   /**
@@ -65,7 +65,7 @@ export class TokenWrapper {
  * @return {Amount} number of minted tokens.
  */
   totalSupply(): Amount {
-    return this.toAmount(call(this.origine, 'totalSupply', '?', 0));
+    return this.toAmount(call(this.origin, 'totalSupply', '?', 0));
   }
 
   /**
@@ -84,7 +84,7 @@ export class TokenWrapper {
     if (this.currency == null) {
       this.currency = new Currency(
           this.name(),
-          U8.parseInt(call(this.origine, 'decimals', '?', 0)));
+          U8.parseInt(call(this.origin, 'decimals', '?', 0)));
     }
 
     return amount.currency() == this.currency;
@@ -100,7 +100,7 @@ export class TokenWrapper {
     if (this.currency == null) {
       this.currency = new Currency(
           this.name(),
-          U8.parseInt(call(this.origine, 'decimals', '?', 0)));
+          U8.parseInt(call(this.origin, 'decimals', '?', 0)));
     }
     const v = U64.parseInt(value);
     return isNaN(v) ? Amount.invalid() :
@@ -116,7 +116,7 @@ export class TokenWrapper {
  */
   balanceOf(account: Address): Amount {
     return this.toAmount(
-        call(this.origine, 'balanceOf', account.toByteString(), 0)
+        call(this.origin, 'balanceOf', account.toByteString(), 0)
     );
   }
 
@@ -134,7 +134,7 @@ export class TokenWrapper {
     }
 
     return call(
-        this.origine,
+        this.origin,
         'transfer',
         toAccount.toStringSegment()
             .concat(ByteArray.fromU64(nbTokens.value()).toByteString()),
@@ -151,7 +151,7 @@ export class TokenWrapper {
  */
   allowance(ownerAccount: Address, spenderAccount: Address): Amount {
     return this.toAmount(call(
-        this.origine,
+        this.origin,
         'allowance',
         ownerAccount.toStringSegment()
             .concat(spenderAccount.toStringSegment()),
@@ -174,7 +174,7 @@ export class TokenWrapper {
     }
 
     return call(
-        this.origine,
+        this.origin,
         'increaseAllowance',
         spenderAccount.toStringSegment()
             .concat(ByteArray.fromU64(nbTokens.value()).toByteString()),
@@ -197,7 +197,7 @@ export class TokenWrapper {
     }
 
     return call(
-        this.origine,
+        this.origin,
         'decreaseAllowance',
         spenderAccount.toStringSegment()
             .concat(ByteArray.fromU64(nbTokens.value()).toByteString()),
@@ -228,7 +228,7 @@ export class TokenWrapper {
     }
 
     return call(
-        this.origine,
+        this.origin,
         'transferFrom',
         ownerAccount.toStringSegment()
             .concat(recipientAccount.toStringSegment()

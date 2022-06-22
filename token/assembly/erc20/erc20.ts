@@ -269,7 +269,7 @@ export function increaseAllowance(args: string): string {
 }
 
 /**
- * Decreases the allowance of the spender the on owner's account  by the amount.
+ * Decreases the allowance of the spender the on owner's account by the amount.
  *
  * This function can only be called by the owner.
  *
@@ -332,8 +332,7 @@ function _approve(
 
 /**
  * Transfers token ownership from the owner's account to the recipient's account
- * using the spender's allowanc
- * e.
+ * using the spender's allowance.
  *
  * This function can only be called by the spender.
  * This function is atomic:

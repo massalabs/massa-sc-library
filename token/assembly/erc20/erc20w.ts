@@ -19,7 +19,8 @@ import {Currency, Amount, ByteArray} from 'mscl-type/assembly/index';
  */
 export class TokenWrapper {
   origin: Address;
-  currency: Currency | null;
+  currency: Currency;
+  isCurrencyInitialized: bool;
 
   /**
    * Wraps a smart contract exposing standard token FFI.
@@ -28,6 +29,7 @@ export class TokenWrapper {
    */
   constructor(at: Address) {
     this.origin = at;
+    this.isCurrencyInitialized = false;
   }
 
   /**
@@ -81,11 +83,12 @@ export class TokenWrapper {
       return false;
     }
 
-    if (this.currency == null) {
+    if (!this.isCurrencyInitialized) {
       this.currency = new Currency(
           this.name(),
           U8.parseInt(call(this.origin, 'decimals', '?', 0))
       );
+      this.isCurrencyInitialized = true;
     }
 
     return amount.currency() == this.currency;
@@ -98,11 +101,12 @@ export class TokenWrapper {
    * @return {Amount}
    */
   private toAmount(value: string): Amount {
-    if (this.currency == null) {
+    if (!this.isCurrencyInitialized) {
       this.currency = new Currency(
           this.name(),
           U8.parseInt(call(this.origin, 'decimals', '?', 0))
       );
+      this.isCurrencyInitialized = true;
     }
     const v = U64.parseInt(value);
     return isNaN(v) ? Amount.invalid() : new Amount(v, this.currency);

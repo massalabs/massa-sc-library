@@ -18,8 +18,8 @@ import {Currency, Amount, ByteArray} from 'mscl-type';
  * ```
  */
 export class TokenWrapper {
-  origin: Address | null;
-  currency: Currency;
+  origin: Address;
+  currency: Currency | null;
 
   /**
    * Wraps a smart contract exposing standard token FFI.

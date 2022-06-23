@@ -29,6 +29,7 @@ export class TokenWrapper {
    */
   constructor(at: Address) {
     this.origin = at;
+    this.currency = new Currency();
     this.isCurrencyInitialized = false;
   }
 

@@ -2,6 +2,7 @@
   "name": "mscl-token",
   "version": "0.0.1",
   "description": "",
+  "types": "assembly/index.ts",
   "ascMain": "assembly/index.ts",
   "scripts": {
     "test": "asp",
@@ -24,12 +25,6 @@
     "mscl-vm-mock": "https://gitpkg.now.sh/massalabs/massa-sc-library/tool/vm-mock?main",
     "prettier": "^2.6.1",
     "typescript": "^4.6.3"
-  },
-  "exports": {
-    ".": {
-      "import": "./build/release.js",
-      "types": "./build/release.d.ts"
-    }
   },
   "dependencies": {
     "massa-sc-std": "https://github.com/massalabs/massa-sc-std.git#31-cleaner-functions",

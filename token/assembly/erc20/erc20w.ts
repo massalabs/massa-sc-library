@@ -1,5 +1,5 @@
-import {Address, call} from 'massa-sc-std';
-import {Currency, Amount, ByteArray} from 'mscl-type';
+import {Address, call} from 'massa-sc-std/assembly/index';
+import {Currency, Amount, ByteArray} from 'mscl-type/assembly/index';
 
 /**
  * The Massa's standard token implementation wrapper.

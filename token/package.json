@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "description": "",
   "types": "assembly/index.ts",
-  "ascMain": "assembly/index.ts",
   "scripts": {
     "test": "asp",
     "fmt": "prettier --write '{*,**/*}.{js,ts,jsx,tsx,json}'",

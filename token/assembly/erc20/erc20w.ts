@@ -18,7 +18,7 @@ import {Currency, Amount, ByteArray} from 'mscl-type';
  * ```
  */
 export class TokenWrapper {
-  origin: Address;
+  origin: Address | null;
   currency: Currency;
 
   /**

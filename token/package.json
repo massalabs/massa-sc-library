@@ -32,6 +32,7 @@
     }
   },
   "dependencies": {
-    "massa-sc-std": "^2.0.0"
+    "massa-sc-std": "https://github.com/massalabs/massa-sc-std.git#31-cleaner-functions",
+    "mscl-type": "https://gitpkg.now.sh/massalabs/massa-sc-library/type?main"
   }
 }

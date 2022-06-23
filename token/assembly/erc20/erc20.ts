@@ -1,26 +1,8 @@
-import {Storage, Context, generate_event} from 'massa-sc-std';
-import {Address, ByteArray} from 'mscl-type';
+import {Address, Storage, Context, generateEvent} from 'massa-sc-std';
+import {ByteArray} from 'mscl-type';
 
 const TRANSFER_EVENT_NAME = 'TRANSFER';
 const APPROVAL_EVENT_NAME = 'APPROVAL';
-
-/**
- * Returns callee's address.
- * @return {Address}
- */
-function calleeAddress(): Address {
-  return Address.fromByteString(Context.get_call_stack()[0]);
-}
-
-/**
- * Returns caller's address.
- *
- * TODO move this function to massa-sc-std
- * @return {Address}
- */
-function callerAddress(): Address {
-  return Address.fromByteString(Context.get_call_stack()[0]);
-}
 
 /**
  * Constructs an event given a key and arguments
@@ -44,7 +26,7 @@ export function version(): string {
 }
 
 // ======================================================== //
-// ==================== TOKEN ATTIBUTES =================== //
+// ====                 TOKEN ATTIBUTES                ==== //
 // ======================================================== //
 
 /**
@@ -101,7 +83,9 @@ export function balanceOf(args: string): string {
  * @return {u64}
  */
 function _balance(address: Address): u64 {
-  const bal = Storage.get_data_or_default(address.toByteString(), '0');
+  const bal = Storage.hasItem(address.toByteString()) ?
+    Storage.getItem(address.toByteString()) :
+    '0';
   return U64.parseInt(bal, 10);
 }
 
@@ -113,7 +97,7 @@ function _balance(address: Address): u64 {
  *
  */
 function _setBalance(address: Address, balance: u64): void {
-  Storage.set_data(address.toByteString(), balance.toString());
+  Storage.setItem(address.toByteString(), balance.toString());
 }
 
 // ==================================================== //
@@ -124,13 +108,13 @@ function _setBalance(address: Address, balance: u64): void {
  * Transfers tokens from the caller's account to the recipient's account.
  *
  * @param {string} args - byte string with the following format:
- * - the recipient's id (address)
+ * - the recipient's account (address)
  * - the number of tokens (u64).
  *
  * @return {string} - boolean value ("1" or "0")
  */
 export function transfer(args: string): string {
-  const ownerAddress = callerAddress();
+  const ownerAddress = Context.caller();
 
   const toAddress = new Address();
   const offset = toAddress.fromStringSegment(args);
@@ -145,14 +129,12 @@ export function transfer(args: string): string {
     return '0';
   }
 
-  const event = createEvent(
-      TRANSFER_EVENT_NAME,
-      [
-        ownerAddress.toByteString(),
-        toAddress.toByteString(),
-        amount.toString(),
-      ]);
-  generate_event(event);
+  const event = createEvent(TRANSFER_EVENT_NAME, [
+    ownerAddress.toByteString(),
+    toAddress.toByteString(),
+    amount.toString(),
+  ]);
+  generateEvent(event);
 
   return '1';
 }
@@ -171,8 +153,11 @@ function _transfer(from: Address, to: Address, amount: u64): bool {
   const currentToBalance = _balance(to);
   const newTobalance = currentToBalance + amount;
 
-  if (currentFromBalance < amount && // underflow of balance from
-    newTobalance < currentToBalance) { // overflow of balance to
+  if (
+    currentFromBalance < amount && // underflow of balance from
+    newTobalance < currentToBalance
+  ) {
+    // overflow of balance to
     return false;
   }
 
@@ -186,13 +171,12 @@ function _transfer(from: Address, to: Address, amount: u64): bool {
 // ====                 ALLOWANCE                  ==== //
 // ==================================================== //
 
-
 /**
  * Returns the allowance set on the owner's account for the spender.
  *
  * @param {string} args - byte string with the following format:
- * - the owner's id (address)
- * - the spender's id (address).
+ * - the owner's account (address)
+ * - the spender's account (address).
  *
  * @return {string} - u64
  */
@@ -203,9 +187,10 @@ export function allowance(args: string): string {
   const spenderAddress = new Address();
   spenderAddress.fromStringSegment(args, offset);
 
-  const r = ownerAddress.isValid() && spenderAddress.isValid() ?
-              _allowance(ownerAddress, spenderAddress) :
-              <u64>NaN;
+  const r =
+    ownerAddress.isValid() && spenderAddress.isValid() ?
+      _allowance(ownerAddress, spenderAddress) :
+      <u64>NaN;
 
   return r.toString();
 }
@@ -219,9 +204,9 @@ export function allowance(args: string): string {
  * @return {u64} the allowance
  */
 function _allowance(ownerAddress: Address, spenderAddress: Address): u64 {
-  const allow = Storage.get_data_or_default(
-      ownerAddress.toByteString().concat(spenderAddress.toByteString()),
-      '0');
+  const k = ownerAddress.toByteString().concat(spenderAddress.toByteString());
+  const allow = Storage.hasItem(k) ? Storage.getItem(k) : '0';
+
   return U64.parseInt(allow, 10);
 }
 
@@ -231,13 +216,13 @@ function _allowance(ownerAddress: Address, spenderAddress: Address): u64 {
  * This function can only be called by the owner.
  *
  * @param {string} args - byte string with the following format:
- * - the spender's id (address);
+ * - the spender's account (address);
  * - the amount (u64).
  *
  * @return {string} - boolean value ("1" or "0")
  */
 export function increaseAllowance(args: string): string {
-  const ownerAddress = callerAddress();
+  const ownerAddress = Context.caller();
 
   const spenderAddress = new Address();
   const offset = spenderAddress.fromStringSegment(args);
@@ -256,31 +241,29 @@ export function increaseAllowance(args: string): string {
 
   _approve(ownerAddress, spenderAddress, newAllowance);
 
-  const event = createEvent(
-      APPROVAL_EVENT_NAME,
-      [
-        ownerAddress.toByteString(),
-        spenderAddress.toByteString(),
-        newAllowance.toString(),
-      ]);
-  generate_event(event);
+  const event = createEvent(APPROVAL_EVENT_NAME, [
+    ownerAddress.toByteString(),
+    spenderAddress.toByteString(),
+    newAllowance.toString(),
+  ]);
+  generateEvent(event);
 
   return '1';
 }
 
 /**
- * Decreases the allowance of the spender the on owner's account  by the amount.
+ * Decreases the allowance of the spender the on owner's account by the amount.
  *
  * This function can only be called by the owner.
  *
  * @param {string} args - byte string with the following format:
- * - the spender's id (address);
+ * - the spender's account (address);
  * - the amount (u64).
  *
  * @return {string} - boolean value ("1" or "0")
  */
 export function decreaseAllowance(args: string): string {
-  const ownerAddress = callerAddress();
+  const ownerAddress = Context.caller();
 
   const spenderAddress = new Address();
   const offset = spenderAddress.fromStringSegment(args);
@@ -301,14 +284,12 @@ export function decreaseAllowance(args: string): string {
 
   _approve(ownerAddress, spenderAddress, newAllowance);
 
-  const event = createEvent(
-      APPROVAL_EVENT_NAME,
-      [
-        ownerAddress.toByteString(),
-        spenderAddress.toByteString(),
-        newAllowance.toString(),
-      ]);
-  generate_event(event);
+  const event = createEvent(APPROVAL_EVENT_NAME, [
+    ownerAddress.toByteString(),
+    spenderAddress.toByteString(),
+    newAllowance.toString(),
+  ]);
+  generateEvent(event);
 
   return '1';
 }
@@ -324,16 +305,17 @@ export function decreaseAllowance(args: string): string {
 function _approve(
     ownerAddress: Address,
     spenderAddress: Address,
-    amount: u64): void {
-  Storage.set_data(
+    amount: u64
+): void {
+  Storage.setItem(
       ownerAddress.toByteString().concat(spenderAddress.toByteString()),
-      amount.toString());
+      amount.toString()
+  );
 }
 
 /**
  * Transfers token ownership from the owner's account to the recipient's account
- * using the spender's allowanc
- * e.
+ * using the spender's allowance.
  *
  * This function can only be called by the spender.
  * This function is atomic:
@@ -348,7 +330,7 @@ function _approve(
  * @return {string} - boolean value ("1" or "0")
  */
 export function transferFrom(args: string): string {
-  const spenderAddress = callerAddress();
+  const spenderAddress = Context.caller();
 
   const ownerAddress = new Address();
   let offset = ownerAddress.fromStringSegment(args);
@@ -374,14 +356,12 @@ export function transferFrom(args: string): string {
 
   _approve(ownerAddress, spenderAddress, spenderAllowance - amount);
 
-  const event = createEvent(
-      TRANSFER_EVENT_NAME,
-      [
-        ownerAddress.toByteString(),
-        recipientAddress.toByteString(),
-        amount.toString(),
-      ]);
-  generate_event(event);
+  const event = createEvent(TRANSFER_EVENT_NAME, [
+    ownerAddress.toByteString(),
+    recipientAddress.toByteString(),
+    amount.toString(),
+  ]);
+  generateEvent(event);
 
   return '1';
 }

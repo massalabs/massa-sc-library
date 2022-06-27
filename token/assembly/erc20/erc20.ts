@@ -24,9 +24,10 @@ export function createEvent(key: string, args: Array<string>): string {
  * Returns the version of this smart contract.
  * This versioning is following the best practices defined in https://semver.org/.
  *
+ * @param {string} _ - unused see https://github.com/massalabs/massa-sc-std/issues/18
  * @return {string}
  */
-export function version(): string {
+export function version(_: string): string { // eslint-disable-line @typescript-eslint/no-unused-vars
   return '0.0.0';
 }
 
@@ -37,17 +38,19 @@ export function version(): string {
 /**
  * Returns the name of the token.
  *
+ * @param {string} _ - unused see https://github.com/massalabs/massa-sc-std/issues/18
  * @return {string} token name.
  */
-export function name(): string {
+export function name(_: string): string { // eslint-disable-line @typescript-eslint/no-unused-vars
   return 'Standard token implementation';
 }
 
 /** Returns the symbol of the token.
  *
+ * @param {string} _ - unused see https://github.com/massalabs/massa-sc-std/issues/18
  * @return {string} token symbol.
  */
-export function symbol(): string {
+export function symbol(_: string): string { // eslint-disable-line @typescript-eslint/no-unused-vars
   return 'STI';
 }
 
@@ -56,9 +59,10 @@ export function symbol(): string {
  *
  * The number of tokens that were initially minted.
  *
+ * @param {string} _ - unused see https://github.com/massalabs/massa-sc-std/issues/18
  * @return {string} - u64
  */
-export function totalSupply(): string {
+export function totalSupply(_: string): string { // eslint-disable-line @typescript-eslint/no-unused-vars
   return '10000';
 }
 
@@ -66,10 +70,10 @@ export function totalSupply(): string {
  * Returns the maximum number of digits being part of the fractional part
  * of the token when using a decimal representation.
  *
- * @param {string} _ - unused string see issue XXX
+ * @param {string} _ - unused see https://github.com/massalabs/massa-sc-std/issues/18
  * @return {string}
  */
-export function decimals(_: string): string {
+export function decimals(_: string): string { // eslint-disable-line @typescript-eslint/no-unused-vars
   return '2';
 }
 
@@ -100,8 +104,9 @@ export function balanceOf(args: string): string {
  */
 function _balance(address: Address): u64 {
   const bal = Storage.hasItem(address.toByteString()) ?
-    Storage.getItem(address.toByteString()) :
-    '0';
+  Storage.getItem(address.toByteString()) :
+  '0';
+
   return U64.parseInt(bal, 10);
 }
 
@@ -205,8 +210,8 @@ export function allowance(args: string): string {
 
   const r =
     ownerAddress.isValid() && spenderAddress.isValid() ?
-      _allowance(ownerAddress, spenderAddress) :
-      <u64>NaN;
+    _allowance(ownerAddress, spenderAddress) :
+    <u64>NaN;
 
   return r.toString();
 }

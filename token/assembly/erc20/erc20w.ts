@@ -11,9 +11,9 @@ import {Currency, Amount, ByteArray} from 'mscl-type/assembly/index';
  * ```assembyscript
  *  ...
  *  const coin = new TokenWrapper(sc_address);
- *  let coin_name = coin.Name();
- *  let bal = coin.BalanceOf(my_address);
- *  print("balance: " + bal.toString() + " of token: " + coin_name);
+ *  const coinName = coin.Name();
+ *  const bal = coin.BalanceOf(myAddress);
+ *  print("balance: " + bal.toString() + " of token: " + coinName);
  * ...
  * ```
  */
@@ -85,10 +85,7 @@ export class TokenWrapper {
     }
 
     if (!this.isCurrencyInitialized) {
-      this.currency = new Currency(
-          this.name(),
-          U8.parseInt(call(this.origin, 'decimals', '?', 0))
-      );
+      this.currency = new Currency(this.name(), U8.parseInt(call(this.origin, 'decimals', '?', 0)));
       this.isCurrencyInitialized = true;
     }
 
@@ -103,10 +100,7 @@ export class TokenWrapper {
    */
   private toAmount(value: string): Amount {
     if (!this.isCurrencyInitialized) {
-      this.currency = new Currency(
-          this.name(),
-          U8.parseInt(call(this.origin, 'decimals', '?', 0))
-      );
+      this.currency = new Currency(this.name(), U8.parseInt(call(this.origin, 'decimals', '?', 0)));
       this.isCurrencyInitialized = true;
     }
     const v = U64.parseInt(value);
@@ -121,9 +115,7 @@ export class TokenWrapper {
    * @return {Amount}
    */
   balanceOf(account: Address): Amount {
-    return this.toAmount(
-        call(this.origin, 'balanceOf', account.toByteString(), 0)
-    );
+    return this.toAmount(call(this.origin, 'balanceOf', account.toByteString(), 0));
   }
 
   /**
@@ -143,9 +135,7 @@ export class TokenWrapper {
       call(
           this.origin,
           'transfer',
-          toAccount
-              .toStringSegment()
-              .concat(ByteArray.fromU64(nbTokens.value()).toByteString()),
+          toAccount.toStringSegment().concat(ByteArray.fromU64(nbTokens.value()).toByteString()),
           0
       ) == '1'
     );
@@ -164,8 +154,7 @@ export class TokenWrapper {
         call(
             this.origin,
             'allowance',
-            ownerAccount.toStringSegment()
-                .concat(spenderAccount.toStringSegment()),
+            ownerAccount.toStringSegment().concat(spenderAccount.toStringSegment()),
             0
         )
     );
@@ -191,9 +180,8 @@ export class TokenWrapper {
       call(
           this.origin,
           'increaseAllowance',
-          spenderAccount
-              .toStringSegment()
-              .concat(ByteArray.fromU64(nbTokens.value()).toByteString()),
+          spenderAccount.toStringSegment().concat(
+              ByteArray.fromU64(nbTokens.value()).toByteString()),
           0
       ) == '1'
     );
@@ -219,9 +207,8 @@ export class TokenWrapper {
       call(
           this.origin,
           'decreaseAllowance',
-          spenderAccount
-              .toStringSegment()
-              .concat(ByteArray.fromU64(nbTokens.value()).toByteString()),
+          spenderAccount.toStringSegment().concat(
+              ByteArray.fromU64(nbTokens.value()).toByteString()),
           0
       ) == '1'
     );
@@ -242,11 +229,7 @@ export class TokenWrapper {
    *
    * @return {boolean} true on success
    */
-  transferFrom(
-      ownerAccount: Address,
-      recipientAccount: Address,
-      nbTokens: Amount
-  ): boolean {
+  transferFrom(ownerAccount: Address, recipientAccount: Address, nbTokens: Amount): boolean {
     if (!this.checkAmount(nbTokens)) {
       return false;
     }
@@ -258,7 +241,8 @@ export class TokenWrapper {
           ownerAccount
               .toStringSegment()
               .concat(
-                  recipientAccount.toStringSegment()
+                  recipientAccount
+                      .toStringSegment()
                       .concat(ByteArray.fromU64(nbTokens.value()).toByteString())
               ),
           0

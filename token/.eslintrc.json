@@ -6,14 +6,11 @@
     "es6": true,
     "jest": true
   },
-  "extends": [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "google"
-  ],
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "google"],
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint", "prettier"],
   "rules": {
-    "@typescript-eslint/ban-ts-comment": "off"
+    "@typescript-eslint/ban-ts-comment": "off",
+    "max-len": ["error", {"code": 100, "ignoreTrailingComments": true}]
   }
 }

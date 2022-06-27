@@ -8,10 +8,7 @@ describe('Black box tests', () => {
   });
 
   it('should return 0 for initialized balance', () => {
-    expect<string>(token.balanceOf('XXXaddress-1XXX')).toBe(
-        '0',
-        'default balance not working'
-    );
+    expect<string>(token.balanceOf('XXXaddress-1XXX')).toBe('0', 'default balance not working');
   });
 
   it('should return initialized balance', () => {

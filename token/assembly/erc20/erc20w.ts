@@ -172,7 +172,8 @@ export class TokenWrapper {
   }
 
   /**
-   * Increases the allowance of the spender on the owner's account by the amount.
+   * Increases the allowance of the spender on the owner's account
+   * by the given amount.
    *
    * This function can only be called by the owner.
    *
@@ -199,7 +200,8 @@ export class TokenWrapper {
   }
 
   /**
-   * Dereases the allowance of the spender on the owner's account by the amount.
+   * Dereases the allowance of the spender on the owner's account
+   * by the given amount.
    *
    * This function can only be called by the owner.
    *
@@ -226,8 +228,8 @@ export class TokenWrapper {
   }
 
   /**
-   * Transfers token ownership from the owner's account to the recipient's account
-   * using the spender's allowance.
+   * Transfers token ownership from the owner's account to
+   * the recipient's account using the spender's allowance.
    *
    * This function can only be called by the spender.
    * This function is atomic:
@@ -256,11 +258,8 @@ export class TokenWrapper {
           ownerAccount
               .toStringSegment()
               .concat(
-                  recipientAccount
-                      .toStringSegment()
-                      .concat(
-                          ByteArray.fromU64(nbTokens.value())
-                              .toByteString())
+                  recipientAccount.toStringSegment()
+                      .concat(ByteArray.fromU64(nbTokens.value()).toByteString())
               ),
           0
       ) == '1'

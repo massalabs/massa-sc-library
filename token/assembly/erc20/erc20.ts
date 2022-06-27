@@ -1,4 +1,9 @@
-import {Address, Storage, Context, generateEvent} from 'massa-sc-std/assembly/index';
+import {
+  Address,
+  Storage,
+  Context,
+  generateEvent,
+} from 'massa-sc-std/assembly/index';
 import {ByteArray} from 'mscl-type/assembly/index';
 
 const TRANSFER_EVENT_NAME = 'TRANSFER';
@@ -55,6 +60,17 @@ export function symbol(): string {
  */
 export function totalSupply(): string {
   return '10000';
+}
+
+/**
+ * Returns the maximum number of digits being part of the fractional part
+ * of the token when using a decimal representation.
+ *
+ * @param {string} _ - unused string see issue XXX
+ * @return {string}
+ */
+export function decimals(_: string): string {
+  return '2';
 }
 
 // ==================================================== //

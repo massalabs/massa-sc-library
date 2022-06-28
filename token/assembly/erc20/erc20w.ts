@@ -18,9 +18,9 @@ import {Currency, Amount, ByteArray} from 'mscl-type/assembly/index';
  * ```
  */
 export class TokenWrapper {
-  origin: Address;
-  currency: Currency;
-  isCurrencyInitialized: bool;
+  _origin: Address;
+  _currency: Currency;
+  _name: string;
 
   /**
    * Wraps a smart contract exposing standard token FFI.
@@ -28,9 +28,11 @@ export class TokenWrapper {
    * @param {Address} at - Address of the smart contract.
    */
   constructor(at: Address) {
-    this.origin = at;
-    this.currency = new Currency();
-    this.isCurrencyInitialized = false;
+    this._origin = at;
+    this._name = call(this._origin, 'name', '', 0);
+    this._currency = new Currency(
+        this._name,
+        U8.parseInt(call(this._origin, 'decimals', '?', 0)));
   }
 
   /**
@@ -40,7 +42,7 @@ export class TokenWrapper {
    * @return {string}
    */
   version(): string {
-    return call(this.origin, 'version', '?', 0);
+    return call(this._origin, 'version', '?', 0);
   }
 
   /**
@@ -49,7 +51,7 @@ export class TokenWrapper {
    * @return {string} - name of the token.
    */
   name(): string {
-    return call(this.origin, 'name', '?', 0);
+    return this._name;
   }
 
   /** Returns the symbol of the token.
@@ -57,7 +59,7 @@ export class TokenWrapper {
    * @return {string} token symbol.
    */
   symbol(): string {
-    return call(this.origin, 'symbol', '?', 0);
+    return call(this._origin, 'symbol', '?', 0);
   }
 
   /**
@@ -68,7 +70,7 @@ export class TokenWrapper {
    * @return {Amount} number of minted tokens.
    */
   totalSupply(): Amount {
-    return this.toAmount(call(this.origin, 'totalSupply', '?', 0));
+    return this.toAmount(call(this._origin, 'totalSupply', '?', 0));
   }
 
   /**
@@ -84,12 +86,7 @@ export class TokenWrapper {
       return false;
     }
 
-    if (!this.isCurrencyInitialized) {
-      this.currency = new Currency(this.name(), U8.parseInt(call(this.origin, 'decimals', '?', 0)));
-      this.isCurrencyInitialized = true;
-    }
-
-    return amount.currency() == this.currency;
+    return amount.currency() == this._currency;
   }
 
   /**
@@ -99,12 +96,8 @@ export class TokenWrapper {
    * @return {Amount}
    */
   private toAmount(value: string): Amount {
-    if (!this.isCurrencyInitialized) {
-      this.currency = new Currency(this.name(), U8.parseInt(call(this.origin, 'decimals', '?', 0)));
-      this.isCurrencyInitialized = true;
-    }
     const v = U64.parseInt(value);
-    return isNaN(v) ? Amount.invalid() : new Amount(v, this.currency);
+    return isNaN(v) ? Amount.invalid() : new Amount(v, this._currency);
   }
 
   /**
@@ -115,7 +108,7 @@ export class TokenWrapper {
    * @return {Amount}
    */
   balanceOf(account: Address): Amount {
-    return this.toAmount(call(this.origin, 'balanceOf', account.toByteString(), 0));
+    return this.toAmount(call(this._origin, 'balanceOf', account.toByteString(), 0));
   }
 
   /**
@@ -133,7 +126,7 @@ export class TokenWrapper {
 
     return (
       call(
-          this.origin,
+          this._origin,
           'transfer',
           toAccount.toStringSegment().concat(ByteArray.fromU64(nbTokens.value()).toByteString()),
           0
@@ -152,7 +145,7 @@ export class TokenWrapper {
   allowance(ownerAccount: Address, spenderAccount: Address): Amount {
     return this.toAmount(
         call(
-            this.origin,
+            this._origin,
             'allowance',
             ownerAccount.toStringSegment().concat(spenderAccount.toStringSegment()),
             0
@@ -178,7 +171,7 @@ export class TokenWrapper {
 
     return (
       call(
-          this.origin,
+          this._origin,
           'increaseAllowance',
           spenderAccount.toStringSegment().concat(
               ByteArray.fromU64(nbTokens.value()).toByteString()),
@@ -205,7 +198,7 @@ export class TokenWrapper {
 
     return (
       call(
-          this.origin,
+          this._origin,
           'decreaseAllowance',
           spenderAccount.toStringSegment().concat(
               ByteArray.fromU64(nbTokens.value()).toByteString()),
@@ -236,7 +229,7 @@ export class TokenWrapper {
 
     return (
       call(
-          this.origin,
+          this._origin,
           'transferFrom',
           ownerAccount
               .toStringSegment()

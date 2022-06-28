@@ -1,4 +1,4 @@
-import * as token from '../erc20/erc20';
+import * as token from '../std/impl';
 // TODO change relative path to cleaner import
 import {setData} from '../../node_modules/mscl-vm-mock/assembly/storage';
 

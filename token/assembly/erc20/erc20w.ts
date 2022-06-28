@@ -32,7 +32,7 @@ export class TokenWrapper {
     this._name = call(this._origin, 'name', '', 0);
     this._currency = new Currency(
         this._name,
-        U8.parseInt(call(this._origin, 'decimals', '?', 0)));
+        U8.parseInt(call(this._origin, 'decimals', '', 0)));
   }
 
   /**
@@ -42,7 +42,7 @@ export class TokenWrapper {
    * @return {string}
    */
   version(): string {
-    return call(this._origin, 'version', '?', 0);
+    return call(this._origin, 'version', '', 0);
   }
 
   /**
@@ -59,7 +59,7 @@ export class TokenWrapper {
    * @return {string} token symbol.
    */
   symbol(): string {
-    return call(this._origin, 'symbol', '?', 0);
+    return call(this._origin, 'symbol', '', 0);
   }
 
   /**
@@ -70,7 +70,7 @@ export class TokenWrapper {
    * @return {Amount} number of minted tokens.
    */
   totalSupply(): Amount {
-    return this.toAmount(call(this._origin, 'totalSupply', '?', 0));
+    return this.toAmount(call(this._origin, 'totalSupply', '', 0));
   }
 
   /**
